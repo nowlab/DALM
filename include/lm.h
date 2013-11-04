@@ -9,6 +9,7 @@
 #include <logger.h>
 #include <vocabulary.h>
 #include <da.h>
+#include <version.h>
 
 namespace DALM {
 	class LM {
@@ -22,6 +23,8 @@ namespace DALM {
 			void dump(std::string dumpfilepath){
 				logger << "[LM::dump] start dumping to file(" << dumpfilepath << ")" << Logger::endi;
 				FILE *fp = std::fopen(dumpfilepath.c_str(),"wb");
+				Version v;
+				v.dump(fp);
 				dumpParams(fp);
 				fclose(fp);
 				logger << "[LM::dump] File-dump done." << Logger::endi;

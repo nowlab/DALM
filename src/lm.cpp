@@ -4,6 +4,7 @@
 
 #include <lm.h>
 #include <arpafile.h>
+#include <version.h>
 
 using namespace DALM;
 
@@ -26,6 +27,7 @@ LM::LM(std::string dumpfilepath,Vocabulary &vocab, Logger &logger)
 
 	FILE *fp = fopen(dumpfilepath.c_str(), "rb");
 	if(fp != NULL){
+		Version v(fp, logger); // Version check.
 		readParams(fp);
 		fclose(fp);
 	} else {
