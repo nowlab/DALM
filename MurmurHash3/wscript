@@ -1,0 +1,13 @@
+import os
+import glob
+
+def build(bld):
+	libname = str(bld.__dict__['path'])
+	currentdir = '%s/%s' % (os.path.dirname(bld.__dict__['stack_path'][-1].srcpath()), libname)
+	files = map(lambda x: os.path.basename(x), glob.glob('./%s/*.cpp'% currentdir))
+	lib = bld.stlib(source=' '.join(files), target=libname)
+	
+	bld.install_files('${PREFIX}/lib/', ['lib%s.a'%libname])
+	
+	headers = map(lambda x: os.path.basename(x), glob.glob('./%s/*.h'% currentdir))
+	bld.install_files('${PREFIX}/include/MurmurHash3', headers)

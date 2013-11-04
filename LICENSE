@@ -1,0 +1,10 @@
+DALM is free software.
+You can redistribute the software under LGPL v3 or later except external libraries.
+Please refer the file "LGPL" for details.
+
+The external libraries we use are following:
+- MurmurHash3
+- darts-clone 0.32g
+
+They keep their original licenses.
+

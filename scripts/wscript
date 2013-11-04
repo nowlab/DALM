@@ -1,0 +1,15 @@
+import os
+import glob
+
+def build(bld):
+	projname = str(bld.__dict__['path'])
+	currentdir = '%s/%s' % (os.path.dirname(bld.__dict__['stack_path'][-1].abspath()),projname)
+	paths = glob.glob('%s/*' % currentdir)
+	for _path in paths:
+		if not "wscript" in _path:
+			file = os.path.basename(_path)
+			base, ext = os.path.splitext(file)
+			if ext=='.sh':
+				bld.install_files('${PREFIX}/scripts', [file], chmod=0755)
+			else:
+				bld.install_files('${PREFIX}/scripts', [file], chmod=0644)
