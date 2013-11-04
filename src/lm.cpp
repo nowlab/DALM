@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <lm.h>
-#include <arpa_file.h>
+#include <arpafile.h>
 
 using namespace DALM;
 

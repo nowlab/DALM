@@ -3,7 +3,9 @@
 This is an implementation of the double-array language model (DALM).
 This method is described on:
 > Makoto Yasuhara, Toru Tanaka, Jun-ya Norimatsu, Mikio Yamamoto. 2013. An Efficient Language Model Using Double-Array Structures. In Proceedings of the 2013 Conference on Empirical Methods in Natural Language Processing.
-<http://www.aclweb.org/anthology/D13-1023>
+
+* Paper : <http://www.aclweb.org/anthology/D13-1023>
+* Slide : <http://www.slideshare.net/jnory/dalm-emnlp-27373037>
 
 ## Build Instruction
 To build DALM, use waf build system.
@@ -36,7 +38,8 @@ We use following libraries:
 To build the source code, we use waf build system version 1.7.13.
 We include them into our code.
 Here is an original download site of waf.
-<http://code.google.com/p/waf/>
+
+* <http://code.google.com/p/waf/>
 
 ## License
 The source code is provided under LGPL v3.
