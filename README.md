@@ -15,7 +15,7 @@ Run the command:
 ## Usage
 ### Building a DALM model
 To build a DALM model, run:
-> <install dir>/scripts/build_dalm.sh [ARPA File] [Division Number] [Output Directory]
+> [install dir]/scripts/build_dalm.sh [ARPA File] [Division Number] [Output Directory]
 
 You need Ruby 2.0 to run the script.
 This script generates following files into [Output Directory]:
