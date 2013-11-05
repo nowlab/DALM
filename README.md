@@ -10,15 +10,15 @@ This method is described on:
 ## Build Instruction
 To build DALM, use waf build system.
 Run the command:
-> ./waf configure build install --prefix=<install dir>
+> ./waf configure build install --prefix=[install dir]
 
 ## Usage
 ### Building a DALM model
 To build a DALM model, run:
-> <install dir>/scripts/build_dalm.sh <ARPA File> <Division Number> <Output Directory>
+> <install dir>/scripts/build_dalm.sh [ARPA File] [Division Number] [Output Directory]
 
 You need Ruby 2.0 to run the script.
-This script generates following files into <Output Directory>:
+This script generates following files into [Output Directory]:
 
 * dalm.bin : binary dumps of a double-array trie.
 * words.bin : binary dumps of vocabulary data.
@@ -27,7 +27,7 @@ This script generates following files into <Output Directory>:
 ### Using DALM on your system
 We include a sample program to use DALM on your system.
 Please see sample/query_sample.cpp.
-On the build time, you may link the libraries which are stored in the <install dir>/lib directory.
+On the build time, you may link the libraries which are stored in the [install dir]/lib directory.
 
 ## External Libraries
 We use following libraries:
