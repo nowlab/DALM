@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+# This code is a part of O-Choco library.
+# This program is a public domain.
+
+if ARGV.size!=1
+	puts "fp : A FullPath converter."
+	puts "#{__FILE__} relative-path"
+	exit
+end
+
+rp = ARGV.shift
+
+puts File.expand_path(rp)
