@@ -14,16 +14,17 @@ tmpfp = open(output+".tmp","w")
 
 ngramnums = [0]
 
+
+
 while arpafp.gets
 	$_.chomp!
 	$_.strip!
-	if $_ =~ /^ngram \d+=\d+$/
+	if $_ =~ /^ngram *?\d+ *?= *?\d+$/
 		ngramnums << 0
 	elsif $_ == "\\1-grams:"
 		break
 	end
 end
-
 
 tmpfp.puts "<#>\t"
 while arpafp.gets
@@ -62,7 +63,7 @@ open("#{output}.tmp2"){|fp|
 			ngram = ngram.split
 			if pre.size == ngram.size-1 and pre == ngram[0..-2]
 				preword = ngram[-1]
-				ngram[-1] = "!#{ngram[-1]}"
+				ngram[-1] = "\x01 #{ngram[-1]}"
 				fpout.puts "#{ngram.join(" ")}\t#{value}"
 				ngramnums[ngram.size-1]+=1
 			else
@@ -79,14 +80,14 @@ open("#{output}.tmp2"){|fp|
 
 				(branch...(ngram.size-1)).each{|i|
 					if i > 0
-						fpout.puts "#{ngram[0..(i-1)].join(" ")} !#{ngram[i]}\t"
+						fpout.puts "#{ngram[0..(i-1)].join(" ")} \x01 #{ngram[i]}\t"
 					else
-						fpout.puts "!#{ngram[i]}\t"
+						fpout.puts "\x01 #{ngram[i]}\t"
 					end
 					ngramnums[i]+=1
 				}
 				preword = ngram[-1]
-				ngram[-1] = "!#{ngram[-1]}"
+				ngram[-1] = "\x01 #{ngram[-1]}"
 				fpout.puts "#{ngram.join(" ")}\t#{value}"
 				ngramnums[ngram.size-1]+=1
 				pre = ngram[0..-2]
@@ -105,7 +106,7 @@ open(output, "w"){|fp|
 	fp.puts "\\n-grams:"
 }
 
-system("LC_ALL=C sort #{output}.tmp3 | tr -d ! >> #{output}")
+system("LC_ALL=C sort #{output}.tmp3 | sed -e 's/\x01 //g' >> #{output}")
 system("LC_ALL=C rm #{output}.tmp3")
 
 open(output,"a"){|fp|
