@@ -131,7 +131,7 @@ void LM::build(std::string &pathtoarpa, std::string &pathtotreefile, size_t divi
 		builder[i] = new DABuilder(da[i], tf[i], value_sets[i], vocab.size());
 	}
 
-	logger << "[LM::build] Make Double Array from trie." << Logger::endi;
+	logger << "[LM::build] Make Double Array." << Logger::endi;
 	size_t threads = PThreadWrapper::thread_available();
 	size_t running = 0;
 	for(size_t i = 0; i < dividenum; i++){
