@@ -9,7 +9,7 @@
 #include <logger.h>
 #include <vocabulary.h>
 #include <da.h>
-#include <version.h>
+#include "version.h"
 
 namespace DALM {
 	class LM {
