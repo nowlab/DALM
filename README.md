@@ -24,6 +24,11 @@ This script generates following files into [Output Directory]:
 * words.bin : binary dumps of vocabulary data.
 * dalm.ini : information of the language model.
 
+### Building a DALM model in parallel
+By default, build_dalm.sh uses all cores in your CPU.
+If you want to reserve some computing resources, you may create /tmp/cpu_reserved file and write the number of cores you want to reserve.
+If you use 4 cores CPU and you want to use only 3 cores, you may write only '1' in /tmp/cpu_resered file.
+
 ### Using DALM on your system
 We include a sample program to use DALM on your system.
 Please see sample/query_sample.cpp.
