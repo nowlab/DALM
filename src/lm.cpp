@@ -5,6 +5,7 @@
 #include <lm.h>
 #include <arpafile.h>
 #include <version.h>
+#include <pthread_wrapper.h>
 
 using namespace DALM;
 
