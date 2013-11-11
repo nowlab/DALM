@@ -5,7 +5,12 @@
 
 #include <fstream>
 
-#define CPUINFO "/proc/cpuinfo"
+#if defined(__linux__)
+	#define CPUINFO "/proc/cpuinfo"
+#elif defined(__APPLE__)
+	#define GET_CORE_COMMAND "sysctl hw.ncpu"
+	#define READ_START 10
+#endif
 #define RESERVED "/tmp/cpu_reserved"
 
 namespace DALM {
@@ -28,7 +33,25 @@ namespace DALM {
 			}
 
 			static size_t thread_available(){
+				size_t cpunum = get_core_num();
+				std::ifstream reserved(RESERVED);
+				size_t usednum=0;
+				if(reserved){
+					reserved >> usednum;
+					reserved.close();
+				}
+
+				return cpunum-usednum;
+			}
+
+		private:
+
+			static size_t get_core_num(){
+#if defined(__linux__)
 				std::ifstream cpuinfo(CPUINFO);
+				if(!cpuinfo){
+					return 1;
+				}
 
 				size_t cpunum;
 				std::string data;
@@ -42,18 +65,23 @@ namespace DALM {
 				}
 				cpuinfo.close();
 				cpunum++;
-
-				std::ifstream reserved(RESERVED);
-				size_t usednum=0;
-				if(reserved){
-					reserved >> usednum;
-					reserved.close();
+				return cpunum;
+#elif defined(__APPLE__)
+				FILE *cmdfp = popen(GET_CORE_COMMAND, "r");
+				std::vector<char> line;
+				char c;
+				
+				while((c=fgetc(cmdfp))!=EOF){
+					line.push_back(c);
 				}
-
-				return cpunum-usednum;
+				pclose(cmdfp);
+				
+				return atoi(&(line[READ_START-1]));
+#else
+				return 1;
+#endif
 			}
 
-		private:
 			static int run_wrapper(void *args){
 				((PThreadWrapper *)args)->run();
 				return 0;

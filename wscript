@@ -6,8 +6,8 @@ def options(opt):
 
 def configure(conf):
 	conf.load('compiler_cxx')
-	conf.env['CFLAGS']=['-O3', '-march=core2', '-mpopcnt', '-msse2', '-mtune=generic', '-Wall', '-DNDEBUG', '-DKENLM_MAX_ORDER=6']
-	conf.env['CXXFLAGS']=['-O3', '-march=core2', '-mpopcnt', '-msse2', '-mtune=generic', '-Wall', '-DNDEBUG', '-DKENLM_MAX_ORDER=6']
+	conf.env['CFLAGS']=['-O3', '-Wall', '-DNDEBUG']
+	conf.env['CXXFLAGS']=['-O3', '-Wall', '-DNDEBUG']
 	conf.env['LINKFLAGS']=['-lpthread']
 	conf.env['INCLUDES']=['MurmurHash3','darts-clone']
 
