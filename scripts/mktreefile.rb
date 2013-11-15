@@ -57,7 +57,7 @@ open("#{output}.tmp2"){|fp|
 		pre = []
 		preword = nil
 		while fp.gets
-			$_.chomp
+			$_.chomp!
 
 			ngram, value = $_.split("\t")
 			ngram = ngram.split
