@@ -10,4 +10,4 @@ def build(bld):
 	bld.install_files('${PREFIX}/lib/', ['lib%s.a'%libname])
 	
 	headers = map(lambda x: os.path.basename(x), glob.glob('./%s/*.h'% currentdir))
-	bld.install_files('${PREFIX}/include/MurmurHash3', headers)
+	bld.install_files('${PREFIX}/MurmurHash3', headers)

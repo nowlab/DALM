@@ -86,16 +86,14 @@ int main(int argc, char **argv){
 		iss >> word;
 		while(iss){
 			// GETTING WORDID
+			// If the word is an unknown word, WORDID is DALM_UNK_WORD.
 			DALM::VocabId wid = vocab.lookup(word.c_str());
 			push(ngram, NGRAMORDER, wid);
 
 			float prob = 0.0;
-			// If the word is an unknown word, WORDID is DALM_UNK_WORD.
-			if(wid != DALM_UNK_WORD){
-				// QUERYING
-				// Note that the ngram array is in reverse order.
-				prob = lm.query(ngram, NGRAMORDER);
-			}
+			// QUERYING
+			// Note that the ngram array is in reverse order.
+			prob = lm.query(ngram, NGRAMORDER);
 
 			cout << word << " => " << prob << endl;
 

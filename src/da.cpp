@@ -178,6 +178,8 @@ float DA::get_prob(int *word,int order){
 	int unigram_prob_pos = da[unigram_daid]->get_pos(word[0], unigram_terminal);
 	if(unigram_prob_pos > 0){
 		tmp_prob = da[unigram_daid]->base_array[unigram_prob_pos].logprob;
+	}else{ // DALM_OOV_PROB
+		tmp_prob = DALM_OOV_PROB;
 	}
 
 	if(order > 0){
@@ -215,11 +217,16 @@ unsigned long int DA::get_state(int *word,int order){
 	if(order > 0){
 		int length=0;
 		int current_pos = get_pos(word[length], 0);
+		unsigned long int current_state = 0;
 
 		while(current_pos > 0 && length <= order){
 			if(length+1 < order){
 				int next_pos = get_pos(word[length+1], current_pos);
 				if(next_pos > 0){
+					int terminal = get_terminal(current_pos);
+					if(value_array[-check_array[terminal]]!=0){
+						current_state = next_pos;
+					}
 					current_pos = next_pos;
 					length++;
 				}else{
@@ -229,7 +236,7 @@ unsigned long int DA::get_state(int *word,int order){
 				break;
 			}
 		}
-		return current_pos;
+		return current_state;
 	}else{
 		return 0;
 	}

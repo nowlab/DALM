@@ -9,8 +9,8 @@ end
 arpafile = ARGV.shift
 ufile = ARGV.shift
 
-open(arpafile, "r:utf-8"){|afp|
-	open(ufile, "w"){|ufp|
+open(arpafile, "r:ASCII-8BIT"){|afp|
+	open(ufile, "w:ASCII-8BIT"){|ufp|
 		while afp.gets
 			$_.chomp!
 			if $_ =~ /^.*?\t.*?(\t.*?|)$/

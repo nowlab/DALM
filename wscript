@@ -20,9 +20,13 @@ def build(bld):
 	use = [projname, 'MurmurHash3']
 
 	###### INSTALL HEADERS ######
-	headers = ['arpafile.h', 'da.h', 'dalm.h', 'logger.h', 'pthread_wrapper.h', 'treefile.h', 'vocabulary.h']
+	headers = ['arpafile.h', 'da.h', 'dalm.h', 'logger.h', 'pthread_wrapper.h', 'treefile.h', 'vocabulary.h', 'version.h']
 	headers = map(lambda x:'include/%s'%x, headers)
 	bld.install_files('${PREFIX}/include', headers)
+
+	headers = ['darts.h']
+	headers = map(lambda x:'darts-clone/%s'%x, headers)
+	bld.install_files('${PREFIX}/darts-clone', headers)
 
 	###### BUILD DALM LIB ######
 	files = ['lm.cpp', 'da.cpp', 'vocabulary.cpp', 'logger.cpp']

@@ -9,12 +9,10 @@ end
 arpa = ARGV.shift
 output = ARGV.shift
 
-arpafp = open(arpa)
-tmpfp = open(output+".tmp","w")
+arpafp = open(arpa,"r:ASCII-8BIT")
+tmpfp = open(output+".tmp","w:ASCII-8BIT")
 
 ngramnums = [0]
-
-
 
 while arpafp.gets
 	$_.chomp!
@@ -52,8 +50,8 @@ tmpfp.close
 
 system("LC_ALL=C sort #{output}.tmp > #{output}.tmp2")
 system("LC_ALL=C rm #{output}.tmp")
-open("#{output}.tmp2"){|fp|
-	open("#{output}.tmp3","w"){|fpout|
+open("#{output}.tmp2","r:ASCII-8BIT"){|fp|
+	open("#{output}.tmp3","w:ASCII-8BIT"){|fpout|
 		pre = []
 		preword = nil
 		while fp.gets
@@ -97,7 +95,7 @@ open("#{output}.tmp2"){|fp|
 }
 
 system("LC_ALL=C rm #{output}.tmp2")
-open(output, "w"){|fp|
+open(output, "w:ASCII-8BIT"){|fp|
 	fp.puts "\\data\\"
 	ngramnums.each_index{|i|
 		fp.puts "ngram #{i+1}=#{ngramnums[i]}"
@@ -109,7 +107,7 @@ open(output, "w"){|fp|
 system("LC_ALL=C sort #{output}.tmp3 | sed -e 's/\x01 //g' >> #{output}")
 system("LC_ALL=C rm #{output}.tmp3")
 
-open(output,"a"){|fp|
+open(output,"a:ASCII-8BIT"){|fp|
 	fp.puts ""
 	fp.puts "\\end\\"
 }

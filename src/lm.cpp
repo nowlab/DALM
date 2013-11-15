@@ -46,9 +46,6 @@ LM::~LM() {
 }
 
 float LM::query(VocabId *ngram, size_t n){
-	if(ngram[0] == DALM_UNK_WORD){
-		return 0.0;
-	}
 	for(size_t i=1;i<n;i++){
 		if(ngram[i] == DALM_UNK_WORD){
 			n=i;
@@ -60,7 +57,7 @@ float LM::query(VocabId *ngram, size_t n){
 	return da[daid]->get_prob((int*)ngram,n-1);
 }
 
-DALM_CONTEXTID LM::get_state(VocabId *ngram, size_t n){
+StateId LM::get_state(VocabId *ngram, size_t n){
 	for(size_t i=0;i<n;i++){
 		if(ngram[i] == DALM_UNK_WORD){
 			n=i;

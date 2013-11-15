@@ -12,6 +12,8 @@
 #include <treefile.h>
 #include <logger.h>
 
+#define DALM_OOV_PROB -100.0
+
 namespace DALM{
 	typedef union{
 		int base_val;

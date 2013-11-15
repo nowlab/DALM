@@ -11,7 +11,7 @@
 #include <da.h>
 #include "version.h"
 
-typedef unsigned long int DALM_CONTEXTID;
+typedef unsigned long int StateId;
 
 namespace DALM {
 	class LM {
@@ -21,7 +21,7 @@ namespace DALM {
 			virtual ~LM();
 
 			float query(VocabId *ngram, size_t n);
-			DALM_CONTEXTID get_state(VocabId *ngram, size_t n);
+			StateId get_state(VocabId *ngram, size_t n);
 
 			void dump(std::string dumpfilepath){
 				logger << "[LM::dump] start dumping to file(" << dumpfilepath << ")" << Logger::endi;
