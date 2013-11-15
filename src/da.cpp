@@ -211,6 +211,30 @@ float DA::get_prob(int *word,int order){
 	}
 }
 
+unsigned long int DA::get_state(int *word,int order){
+	if(order > 0){
+		int length=0;
+		int current_pos = get_pos(word[length], 0);
+
+		while(current_pos > 0 && length <= order){
+			if(length+1 < order){
+				int next_pos = get_pos(word[length+1], current_pos);
+				if(next_pos > 0){
+					current_pos = next_pos;
+					length++;
+				}else{
+					break;
+				}
+			}else{
+				break;
+			}
+		}
+		return current_pos;
+	}else{
+		return 0;
+	}
+}
+
 bool DA::checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bool bow_presence){
 	bool probres = prob_check(n-1,n,ngram,prob);
 	bool bowres = true;

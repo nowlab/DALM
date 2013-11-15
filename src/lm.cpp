@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <lm.h>
+#include <dalm.h>
 #include <arpafile.h>
 #include <version.h>
 #include <pthread_wrapper.h>
@@ -58,6 +58,18 @@ float LM::query(VocabId *ngram, size_t n){
 	
 	size_t daid = (n==1)?(ngram[0]%danum):(ngram[1]%danum);
 	return da[daid]->get_prob((int*)ngram,n-1);
+}
+
+DALM_CONTEXTID LM::get_state(VocabId *ngram, size_t n){
+	for(size_t i=0;i<n;i++){
+		if(ngram[i] == DALM_UNK_WORD){
+			n=i;
+			break;
+		}
+	}
+
+	size_t daid = ngram[0]%danum;
+	return da[daid]->get_state((int*)ngram,n);
 }
 
 std::set<float> **LM::make_value_sets(std::string &pathtoarpa, size_t dividenum){

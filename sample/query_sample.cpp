@@ -7,7 +7,7 @@
 
 #include<logger.h>
 #include<vocabulary.h>
-#include<lm.h>
+#include<dalm.h>
 
 #define NGRAMORDER 5
 

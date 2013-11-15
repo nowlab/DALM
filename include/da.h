@@ -28,6 +28,7 @@ namespace DALM{
 			void dump(FILE *fp);
 
 			float get_prob(int *word,int order);
+			unsigned long int get_state(int *word,int order);
 
 			bool checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bool bow_presence);
 

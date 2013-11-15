@@ -20,7 +20,7 @@ def build(bld):
 	use = [projname, 'MurmurHash3']
 
 	###### INSTALL HEADERS ######
-	headers = ['arpafile.h', 'da.h', 'lm.h', 'logger.h', 'pthread_wrapper.h', 'treefile.h', 'vocabulary.h']
+	headers = ['arpafile.h', 'da.h', 'dalm.h', 'logger.h', 'pthread_wrapper.h', 'treefile.h', 'vocabulary.h']
 	headers = map(lambda x:'include/%s'%x, headers)
 	bld.install_files('${PREFIX}/include', headers)
 
