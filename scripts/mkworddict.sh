@@ -31,7 +31,7 @@ LC_ALL=C sort -t "	" -k 2 line_prob.temp > line_word.temp
 
 popd > /dev/null
 
-LC_ALL=C cut -f 1 ${TEMP}/line_word.temp | tr -d ' ' > $WORDIDS
-LC_ALL=C cut -f 2 ${TEMP}/line_word.temp | tr -d ' ' > $WORDDICT
+LC_ALL=C cut -f 1 ${TEMP}/line_word.temp | LC_ALL=C tr -d ' ' > $WORDIDS
+LC_ALL=C cut -f 2 ${TEMP}/line_word.temp | LC_ALL=C tr -d ' ' > $WORDDICT
 
 rm -r ${TEMP}
