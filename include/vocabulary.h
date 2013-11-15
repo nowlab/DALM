@@ -44,6 +44,7 @@ namespace DALM {
 			size_t read_file(std::string &vocabfilepath, char **&vocabarray);
 			void delete_vocabulary(size_t vocabcount, char **&vocabarray);
 			size_t wcount;
+			VocabId unkid;
 			Darts::DoubleArray da;
 			Logger &logger;
 	};

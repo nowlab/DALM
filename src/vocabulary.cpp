@@ -30,6 +30,14 @@ Vocabulary::Vocabulary(std::string vocabfilepath, std::string savedabinpath,std:
 	delete_vocabulary(vocabcount, vocabulary);
 
 	da.save(savedabinpath.c_str());
+	
+	// Search <unk> tag.
+	Darts::DoubleArray::result_type unk = da.exactMatchSearch<Darts::DoubleArray::result_type>("<unk>");
+	if(unk < 0){
+		unkid = DALM_UNK_WORD;
+	}else{
+		unkid = (VocabId) unk;
+	}
 
 	delete [] id;
 	wcount = vocabcount;
@@ -51,6 +59,14 @@ Vocabulary::Vocabulary(std::string vocabfilepath, std::string savedabinpath, Log
 
 	da.save(savedabinpath.c_str());
 
+	// Search <unk> tag.
+	Darts::DoubleArray::result_type unk = da.exactMatchSearch<Darts::DoubleArray::result_type>("<unk>");
+	if(unk < 0){
+		unkid = DALM_UNK_WORD;
+	}else{
+		unkid = (VocabId) unk;
+	}
+
 	delete [] id;
 	wcount = vocabcount;
 	logger << "[Vocabulary::Vocabulary]wcount:" << wcount << Logger::endi;
@@ -61,6 +77,15 @@ Vocabulary::Vocabulary(std::string dabinpath, Logger &logger) : logger(logger){
 		logger << "Vocabulary: Darts binary file open error." << Logger::endc;
 		throw "error";
 	}
+
+	// Search <unk> tag.
+	Darts::DoubleArray::result_type unk = da.exactMatchSearch<Darts::DoubleArray::result_type>("<unk>");
+	if(unk < 0){
+		unkid = DALM_UNK_WORD;
+	}else{
+		unkid = (VocabId) unk;
+	}
+
 	wcount=0; //unsupported.
 }
 
@@ -117,7 +142,7 @@ VocabId Vocabulary::lookup(const char *vocab){
 	Darts::DoubleArray::result_type id = da.exactMatchSearch<Darts::DoubleArray::result_type>(vocab);
 
 	if(id < 0){
-		return DALM_UNK_WORD;
+		return unkid;
 	}else{
 		return (VocabId) id;
 	}
