@@ -23,7 +23,8 @@ LC_ALL=C ${LOOKUPUNIGRAMS} $1 ${TEMP}/unigrams.txt
 
 pushd ${TEMP} > /dev/null
 
-LC_ALL=C sort -k1nr -k3nr unigrams.txt > probsortuni.temp
+LC_ALL=C echo "1.0	<#>" > probsortuni.temp
+LC_ALL=C sort -k1nr -k3nr unigrams.txt >> probsortuni.temp
 LC_ALL=C nl probsortuni.temp > lineprob.temp
 LC_ALL=C cut -f 1,3 lineprob.temp > line_prob.temp
 LC_ALL=C sort -t "	" -k 2 line_prob.temp > line_word.temp

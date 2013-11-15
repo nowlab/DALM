@@ -18,7 +18,7 @@ void build_DALM(int argc, char **argv, DALM::Logger &logger){
 	char *binwdict = argv[6];
 	size_t dividenum = atoi(argv[7]);
 	logger << "Building vocabfile." << DALM::Logger::endi;	
-	DALM::Vocabulary *vocab = new DALM::Vocabulary(string(worddict),string(binwdict),string(wids), 1, logger);
+	DALM::Vocabulary *vocab = new DALM::Vocabulary(string(worddict),string(binwdict),string(wids), 0, logger);
 
 	logger << "Building DALM." << DALM::Logger::endi;
 	DALM::LM *dalm = new DALM::LM(string(arpa),string(tree),*vocab,dividenum,logger);

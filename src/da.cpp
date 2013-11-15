@@ -79,6 +79,7 @@ void DA::make_da(TreeFile &tf, unsigned unigram_type)
 	memset(history, 0, sizeof(int)*(order-1));
 
 	size_t tenpercent = total / 10;
+
 	for(size_t i = 0; i < total; i++){
 		if((i+1) % tenpercent == 0){
 			logger << "DA[" << daid << "] " << (i+1)/tenpercent << "0% done." << Logger::endi;
@@ -88,9 +89,6 @@ void DA::make_da(TreeFile &tf, unsigned unigram_type)
 		VocabId *ngram;
 		float value;
 		tf.get_ngram(n,ngram,value);
-
-		if(ngram[n-1]==0) ngram[n-1]=1;
-		if(n>1 && ngram[n-2]==0) ngram[n-2]=1;
 
 		if(n==2 && ngram[0]==1 && ngram[1]%datotal!=daid){
 			delete [] ngram;

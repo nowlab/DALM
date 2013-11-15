@@ -47,7 +47,7 @@ LM::~LM() {
 
 float LM::query(VocabId *ngram, size_t n){
 	for(size_t i=1;i<n;i++){
-		if(ngram[i] == DALM_UNK_WORD){
+		if(ngram[i] == vocab.unk()){
 			n=i;
 			break;
 		}
@@ -59,7 +59,7 @@ float LM::query(VocabId *ngram, size_t n){
 
 StateId LM::get_state(VocabId *ngram, size_t n){
 	for(size_t i=0;i<n;i++){
-		if(ngram[i] == DALM_UNK_WORD){
+		if(ngram[i] == vocab.unk()){
 			n=i;
 			break;
 		}

@@ -10,7 +10,6 @@ DIVNUM=$2
 OUTPUT=$3
 
 TREE=$OUTPUT/`basename $ARPA`.tree.txt
-WORDDICT=$OUTPUT/`basename $ARPA`.worddict.txt
 WORDIDS=$OUTPUT/`basename $ARPA`.wordids.txt
 
 DUMPEDARPA=$OUTPUT/`basename $ARPA`.arpa.dump
@@ -19,6 +18,7 @@ DUMPEDTREE=$OUTPUT/`basename $ARPA`.tree.dump
 DABINMODEL=$OUTPUT/dalm.bin
 WORDBIN=$OUTPUT/words.bin
 INI=$OUTPUT/dalm.ini
+WORDDICT=$OUTPUT/words.txt
 
 SCRIPTS=`dirname $0`
 BIN=$SCRIPTS/../bin
@@ -46,23 +46,24 @@ echo "TRIE_DUMPER : `date`"
 LC_ALL=C $DUMPER --arpa $ARPA $DUMPEDARPA
 LC_ALL=C $DUMPER --tree $TREE $DUMPEDTREE
 
-echo "CLEANING(TREE) : `date`"
+echo "CLEANING A TREE FILE : `date`"
 rm $TREE
 
 echo "DALM_BUILDER : `date`"
 LC_ALL=C $BUILDER $DUMPEDARPA $DUMPEDTREE $WORDDICT $WORDIDS $DABINMODEL $WORDBIN $DIVNUM
 
-echo "GENERATING INIFILE : `date`"
+echo "GENERATING AN INIFILE : `date`"
 echo "TYPE=0" > $INI
 echo "MODEL=`$FP $DABINMODEL`" >> $INI
 echo "WORDS=`$FP $WORDBIN`" >> $INI
 echo "ARPA=`$FP $ARPA`" >> $INI
+echo "WORDSTXT=`$FP $WORDDICT`" >> $INI
 
-echo "CLEANING(DUMPFILES) : `date`"
+echo "CLEANING DUMPFILES : `date`"
 rm $DUMPEDARPA $DUMPEDTREE
 
-echo "CLEANING(WORD FILES) : `date`"
-rm $WORDDICT $WORDIDS
+echo "CLEANING A WORDID FILE : `date`"
+rm $WORDIDS
 
 echo "DONE : `date`"
 

@@ -40,6 +40,8 @@ namespace DALM {
 			size_t num_by_order(size_t order){
 				return ngramnums[order-1];
 			}
+			
+			Vocabulary &get_vocab(){ return vocab; }
 
 			void get_ngram(unsigned short &order, VocabId *&ngram, float &value){
 				std::fread(&order, sizeof(unsigned short), 1, fp);

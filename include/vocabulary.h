@@ -39,6 +39,7 @@ namespace DALM {
 					throw "UNSUPPORTED";
 				}
 			}
+			VocabId unk(){ return unkid; }
 
 		private:
 			size_t read_file(std::string &vocabfilepath, char **&vocabarray);

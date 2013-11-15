@@ -20,7 +20,7 @@ void push(DALM::VocabId *ngram, size_t n, DALM::VocabId wid){
 	ngram[0] = wid;
 }
 
-void read_ini(char *inifile, string &model, string &words){
+void read_ini(char *inifile, string &model, string &words, string &wordstxt){
 	ifstream ifs(inifile);
 	string line;
 
@@ -33,6 +33,8 @@ void read_ini(char *inifile, string &model, string &words){
 			model = value;
 		}else if(key=="WORDS"){
 			words = value;
+		}else if(key=="WORDSTXT"){
+			wordstxt = value;
 		}
 		getline(ifs, line);
 	}
@@ -50,8 +52,24 @@ int main(int argc, char **argv){
 	/////////////////////
 	string model; // Path to the double-array file.
 	string words; // Path to the vocabulary file.
-	read_ini(inifile, model, words);
+	string wordstxt; // Path to the vocabulary file in text format.
+	read_ini(inifile, model, words, wordstxt);
 	
+	////////////////
+	// WORD LIST  //
+	////////////////
+	ifstream ifs(wordstxt.c_str());
+	string word;
+	size_t word_count = 0;
+
+	// a wordstxt file contains a word per line.
+	getline(ifs, word);
+	while(ifs){
+		word_count++;
+		getline(ifs, word);
+	}
+	cerr << "WORD COUNT=" << word_count << endl;
+
 	////////////////
 	// LOADING LM //
 	////////////////
