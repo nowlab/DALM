@@ -24,7 +24,7 @@ namespace DALM{
 		public:
 			DA(size_t daid, size_t datotal, DA **neighbours, Logger &logger);
 			DA(FILE *fp, DA **neighbours, Logger &logger);
-			~DA();
+			virtual ~DA();
 
 			void make_da(TreeFile &tf, unsigned unigram_type);
 			void dump(FILE *fp);

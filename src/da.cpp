@@ -133,8 +133,7 @@ void DA::make_da(TreeFile &tf, unsigned unigram_type)
 	}
 	unsigned now=0;
 	for(size_t j = 0; j < historysize; j++){
-		unsigned now_tmp = get_pos(history[j], now);
-		now = now_tmp;
+		now = get_pos(history[j], now);
 	}
 	if(historysize!=0 && history[historysize-1]==1){
 		det_base(words, values, wordssize, now);

@@ -66,15 +66,15 @@ namespace DALM {
 				std::fread(&value, sizeof(float), 1, fp);
 			}
 
-			static void dump(std::string TreeFile, std::string dumpFile, Logger &logger){
-				logger << "[TreeFile::dump] TreeFile=" << TreeFile << Logger::endi;
+			static void dump(std::string treeFile, std::string dumpFile, Logger &logger){
+				logger << "[TreeFile::dump] treeFile=" << treeFile << Logger::endi;
 				logger << "[TreeFile::dump] dumpFile=" << dumpFile << Logger::endi;
 
-				std::ifstream treestream(TreeFile.c_str());
+				std::ifstream treestream(treeFile.c_str());
 				FILE *outfp = std::fopen(dumpFile.c_str(), "wb");
 
 				if(!treestream){
-					logger << "[TreeFile::dump] ARPA File(filepath=" << TreeFile << ") have IO error." << Logger::endc;
+					logger << "[TreeFile::dump] Tree File(filepath=" << treeFile << ") have IO error." << Logger::endc;
 					throw "error";
 				}
 
@@ -94,7 +94,7 @@ namespace DALM {
 
 				std::getline(treestream, line); // skip \data\ line.
 				if(line != "\\data\\"){
-					logger << "ARPA file format error. abort." << Logger::endc;
+					logger << "Tree file format error. abort." << Logger::endc;
 					throw "error.";
 				}
 
