@@ -216,16 +216,13 @@ float DA::get_prob(int word, State &state){
 	unsigned short scount = state.get_count();
 
 	int i = scount-1;
-	std::cerr << "word=" << word << " scount=" << scount << " bow=[ ";
 	for(; i >= 0; i--){
 		StateId &sid = state[i];
 		int prob_pos = get_pos(word, sid);
 		if(prob_pos > 0){
 			prob = base_array[prob_pos].logprob;
-			std::cerr << "] prob=" << prob << " i=" << i;
 			break;
 		}else{
-			std::cerr << value_array[-check_array[sid]] << " ";
 			bow += value_array[-check_array[sid]];
 		}
 	}
@@ -240,10 +237,8 @@ float DA::get_prob(int word, State &state){
 		int prob_pos = da[nextid]->get_pos(word, terminal);
 		if(prob_pos > 0){
 			prob = da[nextid]->base_array[prob_pos].logprob;
-			std::cerr << "] *prob=" << prob;
 		}
 	}
-	std::cerr << std::endl;
 
 	for(size_t i = 0; i < state.get_order(); i++){
 		int next = da[nextid]->get_pos(state.get_word(i), pos);
