@@ -83,22 +83,22 @@ int main(int argc, char **argv){
 
 	// Load the language model.
 	DALM::LM lm(model, vocab, logger);
+
+	// Prepare a state.
+	DALM::State state(NGRAMORDER);
 	
 	//////////////
 	// QUERYING //
 	//////////////
-	string stagstart = "<s>";
 	string stagend = "</s>";
-	DALM::VocabId wid_start = vocab.lookup(stagstart.c_str());
 	DALM::VocabId wid_end = vocab.lookup(stagend.c_str());
 	string line;
-	DALM::VocabId ngram[NGRAMORDER];
 	
 	getline(cin, line);
 	while(cin){
-		for(size_t i = 0; i < NGRAMORDER; i++){
-			ngram[i] = wid_start;
-		}
+		// initialize the state.
+		lm.init_state(state);
+
 		istringstream iss(line);
 		string word;
 		iss >> word;
@@ -106,19 +106,16 @@ int main(int argc, char **argv){
 			// GETTING WORDID
 			// If the word is an unknown word, WORDID is Vocabulary::unk().
 			DALM::VocabId wid = vocab.lookup(word.c_str());
-			push(ngram, NGRAMORDER, wid);
 
 			float prob = 0.0;
 			// QUERYING
-			// Note that the ngram array is in reverse order.
-			prob = lm.query(ngram, NGRAMORDER);
+			prob = lm.query(wid, state);
 
 			cout << word << " => " << prob << endl;
 
 			iss >> word;
 		}
-		push(ngram, NGRAMORDER, wid_end);
-		float prob = lm.query(ngram, NGRAMORDER);
+		float prob = lm.query(wid_end, state);
 		cout << stagend << " => " << prob << endl;
 		
 		getline(cin, line);

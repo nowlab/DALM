@@ -8,6 +8,7 @@
 #include <string>
 #include <set>
 
+#include <state.h>
 #include <pthread_wrapper.h>
 #include <treefile.h>
 #include <logger.h>
@@ -30,7 +31,12 @@ namespace DALM{
 			void dump(FILE *fp);
 
 			float get_prob(int *word,int order);
+			float get_prob(int word, State &state);
+			void init_state(int *word, unsigned short order, State &state);
+
+			/* depricated */
 			unsigned long int get_state(int *word,int order);
+
 
 			bool checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bool bow_presence);
 

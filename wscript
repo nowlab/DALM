@@ -20,7 +20,7 @@ def build(bld):
 	use = [projname, 'MurmurHash3']
 
 	###### INSTALL HEADERS ######
-	headers = ['arpafile.h', 'da.h', 'dalm.h', 'logger.h', 'pthread_wrapper.h', 'treefile.h', 'vocabulary.h', 'version.h']
+	headers = ['arpafile.h', 'da.h', 'dalm.h', 'logger.h', 'pthread_wrapper.h', 'state.h', 'treefile.h', 'vocabulary.h', 'version.h']
 	headers = map(lambda x:'include/%s'%x, headers)
 	bld.install_files('${PREFIX}/include', headers)
 
@@ -55,5 +55,11 @@ def build(bld):
 	files = ['query_sample.cpp']
 	files = map(lambda x: 'sample/%s'%x, files)
 	builder = bld.program(source=' '.join(files), target='query_sample')
+	builder.use = use
+	builder.includes = includes
+
+	files = ['query_with_state_sample.cpp']
+	files = map(lambda x: 'sample/%s'%x, files)
+	builder = bld.program(source=' '.join(files), target='query_with_state_sample')
 	builder.use = use
 	builder.includes = includes

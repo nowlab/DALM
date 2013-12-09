@@ -9,7 +9,8 @@
 #include <logger.h>
 #include <vocabulary.h>
 #include <da.h>
-#include "version.h"
+#include <version.h>
+#include <state.h>
 
 typedef unsigned long int StateId;
 
@@ -21,6 +22,10 @@ namespace DALM {
 			virtual ~LM();
 
 			float query(VocabId *ngram, size_t n);
+			float query(VocabId word, State &state);
+			void init_state(State &state);
+
+			/* depricated */
 			StateId get_state(VocabId *ngram, size_t n);
 
 			void dump(std::string dumpfilepath){
@@ -37,7 +42,6 @@ namespace DALM {
 			void errorcheck(std::string &pathtoarpa);
 			std::set<float> **make_value_sets(std::string &pathtoarpa, size_t dividenum);
 			void build(std::string &pathtoarpa, std::string &pathtotreefile, size_t dividenum);
-			size_t query_index(VocabId *ngram, size_t n);
 			void dumpParams(FILE *fp);
 			void readParams(FILE *fp);
 

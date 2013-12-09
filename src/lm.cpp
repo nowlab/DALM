@@ -54,9 +54,22 @@ float LM::query(VocabId *ngram, size_t n){
 	}
 	
 	size_t daid = (n==1)?(ngram[0]%danum):(ngram[1]%danum);
-	return da[daid]->get_prob((int*)ngram,n-1);
+	return da[daid]->get_prob((int*)ngram, n);
 }
 
+float LM::query(VocabId word, State &state){
+	return da[state.get_daid()]->get_prob((int)word, state);
+}
+
+void LM::init_state(State &state){
+	VocabId ngram[1];
+	std::string stagstart = "<s>";
+	ngram[0] = vocab.lookup(stagstart.c_str());
+	size_t daid = ngram[0] % danum;
+	da[daid]->init_state((int*)ngram, 1, state);
+}
+
+/* depricated */
 StateId LM::get_state(VocabId *ngram, size_t n){
 	for(size_t i=0;i<n;i++){
 		if(ngram[i] == vocab.unk()){
@@ -66,7 +79,7 @@ StateId LM::get_state(VocabId *ngram, size_t n){
 	}
 
 	size_t daid = ngram[0]%danum;
-	return da[daid]->get_state((int*)ngram,n);
+	return ((daid << 32)|da[daid]->get_state((int*)ngram,n));
 }
 
 std::set<float> **LM::make_value_sets(std::string &pathtoarpa, size_t dividenum){
@@ -78,7 +91,7 @@ std::set<float> **LM::make_value_sets(std::string &pathtoarpa, size_t dividenum)
 
   ARPAFile *arpafile = new ARPAFile(pathtoarpa, vocab);
   size_t total = arpafile->get_totalsize();
-  for(size_t i=0;i<total;i++){
+  for(size_t i=0; i<total; i++){
     unsigned short n;
     VocabId *ngram;
     float prob;

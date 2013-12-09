@@ -179,11 +179,11 @@ float DA::get_prob(int *word,int order){
 		tmp_prob = DALM_OOV_PROB;
 	}
 
-	if(order > 0){
+	if(order > 1){
 		int current_pos = get_pos(word[1], 0);
 		length=1;
 
-		while(current_pos > 0 && length <= order){
+		while(current_pos > 0 && length < order){
 			int terminal = get_terminal(current_pos);
 			tmp_bow += value_array[-check_array[terminal]];
 			int prob_pos = get_pos(word[0], terminal);
@@ -192,7 +192,7 @@ float DA::get_prob(int *word,int order){
 				tmp_bow = 0.0;
 			}
 
-			if(length+1 <= order){
+			if(length+1 < order){
 				int next_pos = get_pos(word[length+1], current_pos);
 				if(next_pos > 0){
 					current_pos = next_pos;
@@ -210,33 +210,101 @@ float DA::get_prob(int *word,int order){
 	}
 }
 
-unsigned long int DA::get_state(int *word,int order){
-	if(order > 0){
-		int length=0;
-		int current_pos = get_pos(word[length], 0);
-		unsigned long int current_state = 0;
+float DA::get_prob(int word, State &state){
+	float bow = 0.0;
+	float prob = DALM_OOV_PROB;
+	unsigned short scount = state.get_count();
 
-		while(current_pos > 0 && length <= order){
-			if(length+1 < order){
-				int next_pos = get_pos(word[length+1], current_pos);
-				if(next_pos > 0){
-					int terminal = get_terminal(current_pos);
-					if(value_array[-check_array[terminal]]!=0){
-						current_state = next_pos;
-					}
-					current_pos = next_pos;
-					length++;
-				}else{
-					break;
+	int i = scount-1;
+	std::cerr << "word=" << word << " scount=" << scount << " bow=[ ";
+	for(; i >= 0; i--){
+		StateId &sid = state[i];
+		int prob_pos = get_pos(word, sid);
+		if(prob_pos > 0){
+			prob = base_array[prob_pos].logprob;
+			std::cerr << "] prob=" << prob << " i=" << i;
+			break;
+		}else{
+			std::cerr << value_array[-check_array[sid]] << " ";
+			bow += value_array[-check_array[sid]];
+		}
+	}
+
+	state.set_count(0);
+	state.push_word(word);
+
+	int nextid = word%datotal;
+	int pos = 0;
+	int terminal = da[nextid]->get_terminal(pos);
+	if(i == -1){
+		int prob_pos = da[nextid]->get_pos(word, terminal);
+		if(prob_pos > 0){
+			prob = da[nextid]->base_array[prob_pos].logprob;
+			std::cerr << "] *prob=" << prob;
+		}
+	}
+	std::cerr << std::endl;
+
+	for(size_t i = 0; i < state.get_order(); i++){
+		int next = da[nextid]->get_pos(state.get_word(i), pos);
+		if(next > 0){
+			terminal = da[nextid]->get_terminal(next);
+			state[i] = (StateId) terminal;
+			if(value_array[-da[nextid]->check_array[terminal]]!=0.0){
+				state.set_count(i+1);
+			}
+			pos = next;
+		}else{
+			break;
+		}
+	}
+
+	return prob+bow;
+}
+
+void DA::init_state(int *word, unsigned short order, State &state){
+	int pos = 0;
+	state.set_count(0);
+	state.set_daid(daid);
+	for(unsigned short i = 0; i < order; i++){
+		state.set_word(i, word[i]);
+		int next = get_pos(word[i], pos);
+		if(next > 0){
+			int terminal = get_terminal(next);
+			state[i] = (StateId) terminal;
+			if(value_array[-check_array[terminal]]!=0.0){
+				state.set_count(i+1);
+			}
+		}else{
+			break;
+		}
+	}
+}
+
+/* depricated */
+unsigned long int DA::get_state(int *word,int order){
+	int length=0;
+	int current_pos = get_pos(word[length], 0);
+	unsigned long int current_state = 0;
+
+	while(current_pos > 0 && length <= order){
+		if(length+1 < order){
+			int next_pos = get_pos(word[length+1], current_pos);
+			if(next_pos > 0){
+				int terminal = get_terminal(current_pos);
+				if(value_array[-check_array[terminal]]!=0){
+					current_state = next_pos;
 				}
+				current_pos = next_pos;
+				length++;
 			}else{
 				break;
 			}
+		}else{
+			break;
 		}
-		return current_state;
-	}else{
-		return 0;
 	}
+	return current_state;
 }
 
 bool DA::checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bool bow_presence){
