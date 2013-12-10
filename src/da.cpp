@@ -231,6 +231,7 @@ float DA::get_prob(int word, State &state){
 	state.push_word(word);
 
 	int nextid = word%datotal;
+	state.set_daid(nextid);
 	int pos = 0;
 	int terminal = da[nextid]->get_terminal(pos);
 	if(i == -1){
@@ -245,7 +246,7 @@ float DA::get_prob(int word, State &state){
 		if(next > 0){
 			terminal = da[nextid]->get_terminal(next);
 			state[i] = (StateId) terminal;
-			if(value_array[-da[nextid]->check_array[terminal]]!=0.0){
+			if(da[nextid]->value_array[-da[nextid]->check_array[terminal]]!=0.0){
 				state.set_count(i+1);
 			}
 			pos = next;
