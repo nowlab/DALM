@@ -18,12 +18,24 @@ namespace DALM{
 				daid = 0;
 				head = order-1;
 			}
+
+			State(const State &s):order(s.order), count(s.count), head(s.head), daid(s.daid){
+				sids = new StateId[order];
+				memcpy(sids, s.sids, sizeof(StateId)*order);
+				vids = new VocabId[order];
+				memcpy(vids, s.vids, sizeof(VocabId)*order);
+			}
 			
 			virtual ~State(){
 				delete [] sids;
+				delete [] vids;
 			}
 			
 			StateId &operator[](size_t i){
+				return sids[i];
+			}
+
+			StateId get_sid(size_t i) const{
 				return sids[i];
 			}
 
@@ -41,6 +53,10 @@ namespace DALM{
 
 			size_t get_daid(){
 				return daid;
+			}
+
+			void refresh(){
+				count=0;
 			}
 
 			void push_word(VocabId word){

@@ -24,6 +24,7 @@ namespace DALM {
 			float query(VocabId *ngram, size_t n);
 			float query(VocabId word, State &state);
 			void init_state(State &state);
+			void set_state(VocabId *ngram, size_t n, State &state);
 
 			/* depricated */
 			StateId get_state(VocabId *ngram, size_t n);

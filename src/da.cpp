@@ -106,6 +106,9 @@ void DA::make_da(TreeFile &tf, unsigned unigram_type)
 				now = get_pos(history[j], now);
 			}
 			if(historysize!=0 && history[historysize-1]==1){
+				if(value_id[now]==0.0){
+					value_id[now] = value_find(-0.0);
+				}
 				det_base(words, values, wordssize, now);
 			}else{
 				det_base(words, NULL, wordssize, now);
@@ -136,6 +139,9 @@ void DA::make_da(TreeFile &tf, unsigned unigram_type)
 		now = get_pos(history[j], now);
 	}
 	if(historysize!=0 && history[historysize-1]==1){
+		if(value_id[now]==0.0){
+			value_id[now] = value_find(-0.0);
+		}
 		det_base(words, values, wordssize, now);
 	}else{
 		det_base(words, NULL, wordssize, now);
@@ -238,15 +244,19 @@ float DA::get_prob(int word, State &state){
 		int prob_pos = da[nextid]->get_pos(word, terminal);
 		if(prob_pos > 0){
 			prob = da[nextid]->base_array[prob_pos].logprob;
+			i++;
 		}
 	}
 
-	for(size_t i = 0; i < state.get_order(); i++){
+	scount++;
+	size_t max_depth = (scount>state.get_order())?state.get_order():scount;
+	//std::cout << "max_depth=" << max_depth << std::endl;
+	for(size_t i = 0; i < max_depth; i++){
 		int next = da[nextid]->get_pos(state.get_word(i), pos);
 		if(next > 0){
 			terminal = da[nextid]->get_terminal(next);
 			state[i] = (StateId) terminal;
-			if(da[nextid]->value_array[-da[nextid]->check_array[terminal]]!=0.0){
+			if(*((uint32_t *)&da[nextid]->value_array[-da[nextid]->check_array[terminal]])!=0x80000000UL){
 				state.set_count(i+1);
 			}
 			pos = next;
@@ -263,14 +273,15 @@ void DA::init_state(int *word, unsigned short order, State &state){
 	state.set_count(0);
 	state.set_daid(daid);
 	for(unsigned short i = 0; i < order; i++){
-		state.set_word(i, word[i]);
 		int next = get_pos(word[i], pos);
 		if(next > 0){
+			state.set_word(i, word[i]);
 			int terminal = get_terminal(next);
 			state[i] = (StateId) terminal;
-			if(value_array[-check_array[terminal]]!=0.0){
+			if(*((uint32_t *)&value_array[-check_array[terminal]])!=0x80000000UL){
 				state.set_count(i+1);
 			}
+			pos=next;
 		}else{
 			break;
 		}

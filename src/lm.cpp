@@ -69,6 +69,11 @@ void LM::init_state(State &state){
 	da[daid]->init_state((int*)ngram, 1, state);
 }
 
+void LM::set_state(VocabId *ngram, size_t n, State &state){
+	size_t daid = ngram[0] % danum;
+	da[daid]->init_state((int*)ngram, n, state);
+}
+
 /* depricated */
 StateId LM::get_state(VocabId *ngram, size_t n){
 	for(size_t i=0;i<n;i++){
@@ -87,6 +92,7 @@ std::set<float> **LM::make_value_sets(std::string &pathtoarpa, size_t dividenum)
 	for(size_t i = 0; i < dividenum; i++){
 		value_sets[i] = new std::set<float>;
 		value_sets[i]->insert(0.0);
+		value_sets[i]->insert(-0.0);
 	}
 
   ARPAFile *arpafile = new ARPAFile(pathtoarpa, vocab);
