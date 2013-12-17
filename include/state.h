@@ -77,14 +77,11 @@ namespace DALM{
 			}
 
 			int compare(State *state){
-				int cmp = std::memcmp(sids, state->sids, sizeof(StateId)*std::min(count,state->count));
-				if(count==state->count){
-					return cmp;
-				}else if(cmp!=0){
-					return cmp;
-				}else{
-					return count-state->count;
+				for(size_t i = 0; i < count && i < state->count; i++){
+					int diff = get_word(i) - state->get_word(i);
+					if(diff!=0) return diff;
 				}
+				return count-state->count;
 			}
 
 		private:
