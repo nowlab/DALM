@@ -8,10 +8,10 @@
 #include <string>
 #include <set>
 
-#include <state.h>
-#include <pthread_wrapper.h>
-#include <treefile.h>
-#include <logger.h>
+#include "state.h"
+#include "pthread_wrapper.h"
+#include "treefile.h"
+#include "logger.h"
 
 #define DALM_OOV_PROB -100.0
 

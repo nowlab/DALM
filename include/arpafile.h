@@ -8,8 +8,8 @@
 #include<fstream>
 #include<vector>
 
-#include<logger.h>
-#include<vocabulary.h>
+#include "logger.h"
+#include "vocabulary.h"
 
 namespace DALM {
 	class ARPAFile {

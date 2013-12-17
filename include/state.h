@@ -2,7 +2,7 @@
 #define DALM_STATE_H_
 
 #include<cstring>
-#include<vocabulary.h>
+#include "vocabulary.h"
 
 typedef unsigned long int StateId;
 
