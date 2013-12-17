@@ -76,6 +76,17 @@ namespace DALM{
 				return order;
 			}
 
+			int compare(State *state){
+				int cmp = std::memcmp(sids, state->sids, sizeof(StateId)*std::min(count,state->count));
+				if(count==state->count){
+					return cmp;
+				}else if(cmp!=0){
+					return cmp;
+				}else{
+					return count-state->count;
+				}
+			}
+
 		private:
 			unsigned short order;
 			unsigned short count;
