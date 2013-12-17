@@ -2,7 +2,7 @@
 #define VERSION_H_
 
 #define DALM_FILE_TYPE 0xDA73
-#define DALM_FILE_VERSION 1.0
+#define DALM_FILE_VERSION 2.0
 
 #include<cstdio>
 
@@ -25,7 +25,7 @@ namespace DALM {
 				fread(&ftype, sizeof(unsigned int), 1, fp);
 				fread(&fversion, sizeof(float), 1, fp);
 				if(ftype!=type || fversion!=version){
-					logger << "[Version::Version] Unrecognized format." << Logger::ende;
+					logger << "[Version::Version] Unrecognized format. If you update DALM, please rebuild the model." << Logger::ende;
 					throw "[Version::Version] Unrecognized format.";
 				}
 			}
