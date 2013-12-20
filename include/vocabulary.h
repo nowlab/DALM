@@ -3,9 +3,8 @@
 
 #include<string>
 
-#include<darts.h>
-
-#include<logger.h>
+#include "darts.h"
+#include "logger.h"
 
 #define DALM_UNK_WORD 0
 

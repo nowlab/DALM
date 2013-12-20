@@ -7,7 +7,7 @@
 #include<fstream>
 #include<vector>
 
-#include<vocabulary.h>
+#include "vocabulary.h"
 
 namespace DALM {
 	class TreeFile {
