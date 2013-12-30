@@ -8,7 +8,7 @@ def configure(conf):
 	conf.load('compiler_cxx')
 	conf.env['CFLAGS']=['-O3', '-Wall', '-DNDEBUG']
 	conf.env['CXXFLAGS']=['-O3', '-Wall', '-DNDEBUG']
-	conf.env['LINKFLAGS']=['-lpthread']
+	conf.env['LIB']=['pthread']
 	conf.env['INCLUDES']=['MurmurHash3','darts-clone']
 
 def build(bld):
