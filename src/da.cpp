@@ -5,10 +5,10 @@
 
 #include <utility>
 
-#include <treefile.h>
-#include <da.h>
+#include "treefile.h"
+#include "da.h"
 
-#include <MurmurHash3.h>
+#include "MurmurHash3.h"
 
 using namespace DALM;
 

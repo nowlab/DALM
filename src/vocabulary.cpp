@@ -3,9 +3,8 @@
 #include <fstream>
 #include <sstream>
 
-#include <vocabulary.h>
-
-#include <darts.h>
+#include "vocabulary.h"
+#include "darts.h"
 
 using namespace DALM;
 
