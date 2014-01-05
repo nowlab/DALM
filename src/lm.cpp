@@ -2,10 +2,10 @@
 
 #include <vector>
 
-#include <dalm.h>
-#include <arpafile.h>
-#include <version.h>
-#include <pthread_wrapper.h>
+#include "dalm.h"
+#include "arpafile.h"
+#include "version.h"
+#include "pthread_wrapper.h"
 
 using namespace DALM;
 
