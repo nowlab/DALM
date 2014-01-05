@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 if [ $# -ne 3 ]; then
 	echo "Usage: $0 arpa-file output-worddict output-wordids"
