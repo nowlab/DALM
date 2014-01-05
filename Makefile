@@ -4,20 +4,25 @@ CXX = g++
 CPPFLAGS = -Wall -O3 -I. -Iinclude -Idarts-clone -IMurmurHash3
 LIBS = -lz -lpthread
 
-all: builder dumper libdalm
-	mkdir lib include
+all: builder dumper libdalm libMurmurHash3
+	mkdir -p lib 
 	cp libdalm.a lib
-	cp src/*.h include
+	cp libMurmurHash3.a lib
 
-OBJECTS = MurmurHash3/MurmurHash3.o src/da.o src/lm.o src/logger.o src/vocabulary.o
-builder: $(OBJECTS) src/builder.o
+MURMURHASH3_OBJ = MurmurHash3/MurmurHash3.o
+DALM_OBJ = src/da.o src/lm.o src/logger.o src/vocabulary.o
+
+builder: $(DALM_OBJ) $(MURMURHASH3_OBJ) src/builder.o
 	$(CXX) $(CPPFLAGS) -o builder $^ $(LIBS)
 
-dumper: $(OBJECTS) src/dumper.o
+dumper: $(DALM_OBJ) $(MURMURHASH3_OBJ) src/dumper.o
 	$(CXX) $(CPPFLAGS) -o dumper $^ $(LIBS)
 
-libdalm: $(OBJECTS)
+libdalm: $(DALM_OBJ)
 	ar -rcs libdalm.a $(OBJECTS)
 
+libMurmurHash3: $(MURMURHASH3_OBJ)
+	ar -rcs libMurmurHash3.a $(MURMURHASH3_OBJ)
+
 clean:
-	rm -f dalm *.o */*.o */*/*.o */*/*/*.o
+	rm -fr dalm *.o */*.o */*/*.o */*/*/*.o lib
