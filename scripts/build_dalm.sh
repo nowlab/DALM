@@ -15,16 +15,20 @@ WORDIDS=$OUTPUT/`basename $ARPA`.wordids.txt
 DUMPEDARPA=$OUTPUT/`basename $ARPA`.arpa.dump
 DUMPEDTREE=$OUTPUT/`basename $ARPA`.tree.dump
 
-DABINMODEL=$OUTPUT/dalm.bin
-WORDBIN=$OUTPUT/words.bin
+DABINMODELFN=dalm.bin
+WORDBINFN=words.bin
+WORDDICTFN=words.txt
+
+DABINMODEL=$OUTPUT/$DABINMODELFN
+WORDBIN=$OUTPUT/$WORDBINFN
+WORDDICT=$OUTPUT/$WORDDICTFN
+
 INI=$OUTPUT/dalm.ini
-WORDDICT=$OUTPUT/words.txt
 
 SCRIPTS=`dirname $0`
 BIN=$SCRIPTS/../bin
 MKWORDDICT=$SCRIPTS/mkworddict.sh
 MKTREEFILE="ruby $SCRIPTS/mktreefile.rb"
-FP="ruby $SCRIPTS/fp"
 
 DUMPER=$BIN/trie_dumper
 BUILDER=$BIN/dalm_builder
@@ -53,11 +57,11 @@ echo "DALM_BUILDER : `date`"
 LC_ALL=C $BUILDER $DUMPEDARPA $DUMPEDTREE $WORDDICT $WORDIDS $DABINMODEL $WORDBIN $DIVNUM
 
 echo "GENERATING AN INIFILE : `date`"
-echo "TYPE=0" > $INI
-echo "MODEL=`$FP $DABINMODEL`" >> $INI
-echo "WORDS=`$FP $WORDBIN`" >> $INI
-echo "ARPA=`$FP $ARPA`" >> $INI
-echo "WORDSTXT=`$FP $WORDDICT`" >> $INI
+echo "TYPE=1" > $INI
+echo "MODEL=$DABINMODELFN" >> $INI
+echo "WORDS=$WORDBINFN" >> $INI
+echo "ARPA=`basename $ARPA`" >> $INI
+echo "WORDSTXT=$WORDDICTFN" >> $INI
 
 echo "CLEANING DUMPFILES : `date`"
 rm $DUMPEDARPA $DUMPEDTREE

@@ -58,8 +58,8 @@ int main(int argc, char **argv){
 	read_ini(inifile.c_str(), model, words, wordstxt);
 
 	model = path + "/" + model;
-    words = path + "/" + words;
-    wordstxt = path + "/" + wordstxt;
+	words = path + "/" + words;
+	wordstxt = path + "/" + wordstxt;
 
 	////////////////
 	// WORD LIST  //
