@@ -20,7 +20,7 @@ void push(DALM::VocabId *ngram, size_t n, DALM::VocabId wid){
 	ngram[0] = wid;
 }
 
-void read_ini(char *inifile, string &model, string &words, string &wordstxt){
+void read_ini(const char *inifile, string &model, string &words, string &wordstxt){
 	ifstream ifs(inifile);
 	string line;
 
@@ -45,7 +45,9 @@ int main(int argc, char **argv){
 		cerr << "Usage : " << argv[0] << " dalm-ini-file" << endl;
 		return 1;
 	}
-	char *inifile = argv[1];
+	
+	string path = argv[1];
+    string inifile= path + "/dalm.ini";
 
 	/////////////////////
 	// READING INIFILE //
@@ -53,8 +55,12 @@ int main(int argc, char **argv){
 	string model; // Path to the double-array file.
 	string words; // Path to the vocabulary file.
 	string wordstxt; // Path to the vocabulary file in text format.
-	read_ini(inifile, model, words, wordstxt);
-	
+	read_ini(inifile.c_str(), model, words, wordstxt);
+
+	model = path + "/" + model;
+    words = path + "/" + words;
+    wordstxt = path + "/" + wordstxt;
+
 	////////////////
 	// WORD LIST  //
 	////////////////
