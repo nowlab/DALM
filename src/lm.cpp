@@ -1,5 +1,6 @@
 #include <cmath>
 
+#include <unistd.h>
 #include <vector>
 
 #include "dalm.h"
@@ -162,17 +163,19 @@ void LM::build(std::string &pathtoarpa, std::string &pathtotreefile, size_t divi
 
 	logger << "[LM::build] Make Double Array." << Logger::endi;
 	size_t threads = PThreadWrapper::thread_available();
+	logger << "[LM::build] threads available=" << threads << Logger::endi;
 	size_t running = 0;
 	for(size_t i = 0; i < dividenum; i++){
 		builder[i]->start();
 		running++;
-		if(running%threads==0){
+		if(running>=threads){
 			while(true){
+				usleep(500);
 				size_t runcounter = 0;
-				for(size_t j = 0; j < i; j++){
-					if(builder[i]->is_running()) runcounter++;
+				for(size_t j = 0; j <= i; j++){
+					if(!builder[j]->is_finished()) runcounter++;
 				}
-				if(runcounter<running){
+				if(runcounter<threads){
 					running = runcounter;
 					break;
 				}

@@ -75,18 +75,17 @@ namespace DALM{
 		public:
 			DABuilder(DA *da, TreeFile *tf, std::set<float> *value_set, size_t vocabsize)
 				:da(da), tf(tf), value_set(value_set), vocabsize(vocabsize){
-					running=false;
+					finished=false;
 				}
 
 			virtual void run(){
-				running=true;
 				da->value_set(value_set);
 				da->make_da(*tf,vocabsize);
-				running=false;
+				finished=true;
 			}
 
-			bool is_running(){
-				return running;
+			bool is_finished(){
+				return finished;
 			}
 
 		private:
@@ -94,7 +93,7 @@ namespace DALM{
 			TreeFile *tf;
 			std::set<float> *value_set;
 			size_t vocabsize;
-			bool running;
+			bool finished;
 	};
 }
 
