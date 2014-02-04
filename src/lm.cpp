@@ -119,7 +119,7 @@ std::set<float> **LM::make_value_sets(std::string &pathtoarpa, size_t dividenum)
 
 void LM::errorcheck(std::string &pathtoarpa){
   ARPAFile *arpafile = new ARPAFile(pathtoarpa, vocab);
-  logger << "[LM::build] DoubleArray building error check." << Logger::endi;
+  logger << "[LM::build] start error check." << Logger::endi;
   int error_num = 0;
   size_t total = arpafile->get_totalsize();
   for(size_t i=0;i<total;i++){
@@ -133,15 +133,13 @@ void LM::errorcheck(std::string &pathtoarpa){
 		size_t daid = (n==1)?ngram[0]%danum:ngram[n-2]%danum;
     builderror = da[daid]->checkinput(n,ngram,bow,prob,bow_presence);
     if(!builderror){
-      logger << "[LM::build] DA build error occured." << Logger::endi;
-      logger << "[LM::build] error arpa line is " << i << Logger::endi;
+      logger << "[LM::build] Error: line=" << i << Logger::ende;
       error_num++;
     }
     delete [] ngram;
   }
   delete arpafile;
-  logger << "[LM::build] total error" << error_num << Logger::endi;
-  logger << "[LM::build] DoubleArray building error check end." << Logger::endi;
+  logger << "[LM::build] # of errors: " << error_num << Logger::endi;
 }
 
 void LM::build(std::string &pathtoarpa, std::string &pathtotreefile, size_t dividenum){

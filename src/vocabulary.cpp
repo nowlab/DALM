@@ -40,7 +40,7 @@ Vocabulary::Vocabulary(std::string vocabfilepath, std::string savedabinpath,std:
 
 	delete [] id;
 	wcount = vocabcount;
-	logger << "[Vocabulary::Vocabulary]wcount:" << wcount << Logger::endi;
+	logger << "[Vocabulary::Vocabulary] # of words=" << wcount << Logger::endi;
 }
 
 
