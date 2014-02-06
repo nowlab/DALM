@@ -17,7 +17,8 @@ Run the command:
 To build a DALM model, run:
 > [install dir]/scripts/build_dalm.sh [ARPA File] [Division Number] [Output Directory]
 
-If you need to build a large language model, we recommend to set the division number "8" or "16".
+If you need to build a large language model (for example, over 30GB in ARPA Format),
+we recommend to set the division number "8" or "16" (or larger!).
 
 You may need Ruby 2.0 to run the script.
 This script generates following files into [Output Directory]:
