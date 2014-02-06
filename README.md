@@ -17,17 +17,21 @@ Run the command:
 To build a DALM model, run:
 > [install dir]/scripts/build_dalm.sh [ARPA File] [Division Number] [Output Directory]
 
-You need Ruby 2.0 to run the script.
+If you need to build a large language model (for example, over 30GB in ARPA Format),
+we recommend to set the division number "8" or "16" (or larger!).
+
+You may need Ruby 2.0 to run the script.
 This script generates following files into [Output Directory]:
 
+* dalm.ini : information of the model.
 * dalm.bin : binary dumps of a double-array trie.
 * words.bin : binary dumps of vocabulary data.
-* dalm.ini : information of the language model.
+* words.txt : a set of words of the model.
 
 ### Building a DALM model in parallel
 By default, build_dalm.sh uses all cores in your CPU.
 If you want to reserve some computing resources, you may create /tmp/cpu_reserved file and write the number of cores you want to reserve.
-If you use 4 cores CPU and you want to use only 3 cores, you may write only '1' in /tmp/cpu_resered file.
+If you have 4 cores and you want to use only 3, you may write only '1' in /tmp/cpu_resered file.
 
 ### Using DALM on your system
 We include a sample program to use DALM on your system.
