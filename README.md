@@ -38,7 +38,6 @@ On the build time, you may link the libraries which are stored in the [install d
 We use following libraries:
 
 * Darts-clone 0.32g : <https://code.google.com/p/darts-clone/>
-* MurmurHash3 : <http://code.google.com/p/smhasher/>
 
 To build the source code, we use waf build system version 1.7.13.
 We include them into our code.

@@ -5,13 +5,15 @@
 
 #include "dalm.h"
 #include "arpafile.h"
+#include "value_array.h"
+#include "value_array_index.h"
 #include "version.h"
 #include "pthread_wrapper.h"
 
 using namespace DALM;
 
 LM::LM(std::string pathtoarpa, std::string pathtotree, Vocabulary &vocab, size_t dividenum, Logger &logger)
-		:vocab(vocab), logger(logger) {
+		:value_array(NULL), vocab(vocab), logger(logger) {
 
 	logger << "[LM::LM] TEXTMODE begin." << Logger::endi;
 	logger << "[LM::LM] pathtoarpa=" << pathtoarpa << Logger::endi;
@@ -30,6 +32,7 @@ LM::LM(std::string dumpfilepath,Vocabulary &vocab, Logger &logger)
 	FILE *fp = fopen(dumpfilepath.c_str(), "rb");
 	if(fp != NULL){
 		Version v(fp, logger); // Version check.
+		value_array = new ValueArray(fp, logger);
 		readParams(fp);
 		fclose(fp);
 	} else {
@@ -44,6 +47,7 @@ LM::~LM() {
 		delete da[i];
 	}
 	delete [] da;
+	if(value_array != NULL) delete value_array;
 }
 
 float LM::query(VocabId *ngram, size_t n){
@@ -88,38 +92,9 @@ StateId LM::get_state(VocabId *ngram, size_t n){
 	return ((daid << 32)|da[daid]->get_state((int*)ngram,n));
 }
 
-std::set<float> **LM::make_value_sets(std::string &pathtoarpa, size_t dividenum){
-	std::set<float> **value_sets = new std::set<float>*[dividenum];
-	for(size_t i = 0; i < dividenum; i++){
-		value_sets[i] = new std::set<float>;
-		value_sets[i]->insert(0.0);
-		value_sets[i]->insert(-0.0);
-	}
-
-  ARPAFile *arpafile = new ARPAFile(pathtoarpa, vocab);
-  size_t total = arpafile->get_totalsize();
-  for(size_t i=0; i<total; i++){
-    unsigned short n;
-    VocabId *ngram;
-    float prob;
-    float bow;
-    bool bow_presence;
-    bow_presence = arpafile->get_ngram(n,ngram,prob,bow);
-
-		if(bow_presence){
-			size_t daid = ngram[n-1]%danum;
-			value_sets[daid]->insert(bow);
-		}
-    delete [] ngram;
-  }
-  delete arpafile;
-
-  return value_sets;
-}
-
 void LM::errorcheck(std::string &pathtoarpa){
   ARPAFile *arpafile = new ARPAFile(pathtoarpa, vocab);
-  logger << "[LM::build] start error check." << Logger::endi;
+  logger << "[LM::errorcheck] start." << Logger::endi;
   int error_num = 0;
   size_t total = arpafile->get_totalsize();
   for(size_t i=0;i<total;i++){
@@ -146,7 +121,8 @@ void LM::build(std::string &pathtoarpa, std::string &pathtotreefile, size_t divi
 	logger << "[LM::build] LM build begin." << Logger::endi;
 	danum = dividenum;
 
-	std::set<float> **value_sets = make_value_sets(pathtoarpa, dividenum);
+	value_array = new ValueArray(pathtoarpa, vocab, logger);
+	ValueArrayIndex value_array_index(*value_array);
 
 	logger << "[LM::build] DoubleArray build begin." << Logger::endi;
 	da = new DA*[dividenum];
@@ -154,9 +130,9 @@ void LM::build(std::string &pathtoarpa, std::string &pathtotreefile, size_t divi
 	DABuilder **builder = new DABuilder*[dividenum];
 	
 	for(size_t i = 0; i < dividenum; i++){
-		da[i] = new DA(i, dividenum, da, logger); 
+		da[i] = new DA(i, dividenum, *value_array, da, logger); 
 		tf[i] = new TreeFile(pathtotreefile, vocab);
-		builder[i] = new DABuilder(da[i], tf[i], value_sets[i], vocab.size());
+		builder[i] = new DABuilder(da[i], tf[i], value_array_index, vocab.size());
 	}
 
 	logger << "[LM::build] Make Double Array." << Logger::endi;
@@ -190,11 +166,9 @@ void LM::build(std::string &pathtoarpa, std::string &pathtotreefile, size_t divi
 	for(size_t i = 0; i < dividenum; i++){
 		delete builder[i];
 		delete tf[i];
-		delete value_sets[i];
 	}
 	delete [] builder;
 	delete [] tf;
-	delete [] value_sets;
 	
 	logger << "[LM::build] LM build end." << Logger::endi;
 }
@@ -210,7 +184,7 @@ void LM::readParams(FILE *fp){
 	fread(&danum, sizeof(size_t), 1, fp);
 	da = new DA*[danum];
 	for(size_t i = 0; i < danum; i++){
-		da[i] = new DA(fp, da, logger);
+		da[i] = new DA(fp, *value_array, da, logger);
 	}
 }
 

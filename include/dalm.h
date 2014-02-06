@@ -34,6 +34,7 @@ namespace DALM {
 				FILE *fp = std::fopen(dumpfilepath.c_str(),"wb");
 				Version v;
 				v.dump(fp);
+				value_array->dump(fp);
 				dumpParams(fp);
 				fclose(fp);
 				logger << "[LM::dump] File-dump done." << Logger::endi;
@@ -41,12 +42,12 @@ namespace DALM {
 
 		private:
 			void errorcheck(std::string &pathtoarpa);
-			std::set<float> **make_value_sets(std::string &pathtoarpa, size_t dividenum);
 			void build(std::string &pathtoarpa, std::string &pathtotreefile, size_t dividenum);
 			void dumpParams(FILE *fp);
 			void readParams(FILE *fp);
 
 			DA **da;
+			ValueArray *value_array;
 			size_t danum;
 			Vocabulary &vocab;
 			Logger &logger;

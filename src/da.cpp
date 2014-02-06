@@ -7,29 +7,39 @@
 
 #include "treefile.h"
 #include "da.h"
-
-#include "MurmurHash3.h"
+#include "value_array.h"
+#include "value_array_index.h"
 
 using namespace DALM;
 
-DA::DA(size_t daid, size_t datotal, DA **neighbours, Logger &logger)
-	: daid(daid), datotal(datotal), da(neighbours), logger(logger){
-		array_size=3;
-		base_array = new _base[array_size];
-		check_array = new int[array_size];
-		value_id = new int[array_size];
+DA::DA(
+		size_t daid, 
+		size_t datotal, 
+		ValueArray &value_array, 
+		DA **neighbours, 
+		Logger &logger)
+		: daid(daid), 
+			datotal(datotal), 
+			value_array(value_array), 
+			da(neighbours), 
+			logger(logger){
+	array_size=3;
+	base_array = new _base[array_size];
+	check_array = new int[array_size];
+	value_id = new int[array_size];
 
-		max_index=0;
-		first_empty_index=1;
+	max_index=0;
+	first_empty_index=1;
 
-		for(unsigned i=0;i<array_size;i++){
-			base_array[i].base_val = -1;
-			check_array[i] = -1;
-			value_id[i] = -1;
-		}  
-	}
+	for(unsigned i=0;i<array_size;i++){
+		base_array[i].base_val = -1;
+		check_array[i] = -1;
+		value_id[i] = -1;
+	}  
+}
 
-DA::DA(FILE *fp, DA **neighbours, Logger &logger): logger(logger){
+DA::DA(FILE *fp, ValueArray &value_array, DA **neighbours, Logger &logger)
+	: value_array(value_array), logger(logger){
 	fread(&daid,sizeof(unsigned),1,fp);
 	fread(&datotal,sizeof(unsigned),1,fp);
 	da = neighbours;
@@ -42,25 +52,18 @@ DA::DA(FILE *fp, DA **neighbours, Logger &logger): logger(logger){
 	fread(base_array,sizeof(_base),array_size,fp);
 	fread(check_array,sizeof(int),array_size,fp);
 
-	fread(&varray_size,sizeof(unsigned),1,fp);
-	value_array = new float[varray_size];
-	fread(value_array,sizeof(float),varray_size,fp);
 	value_id = NULL;
-	value_table = NULL;
 	first_empty_index=0;
 	logger << "DA[" << daid << "] da-size: " << array_size << Logger::endi;
-	logger << "DA[" << daid << "] val-size: " << varray_size << Logger::endi;
 }
 
 DA::~DA(){
 	if(base_array != NULL) delete [] base_array;
 	if(check_array != NULL) delete [] check_array;
 	if(value_id != NULL) delete [] value_id;
-	if(value_array != NULL) delete [] value_array;
-	if(value_table != NULL) delete [] value_table;
 }
 
-void DA::make_da(TreeFile &tf, unsigned unigram_type)
+void DA::make_da(TreeFile &tf, ValueArrayIndex &value_array_index, unsigned unigram_type)
 {
 	resize_array(unigram_type*20);
 	base_array[0].base_val=0;
@@ -107,14 +110,14 @@ void DA::make_da(TreeFile &tf, unsigned unigram_type)
 			}
 			if(historysize!=0 && history[historysize-1]==1){
 				if(value_id[now]==0.0){
-					value_id[now] = value_find(-0.0);
+					value_id[now] = value_array_index.lookup(-0.0);
 				}
 				det_base(words, values, wordssize, now);
 			}else{
 				det_base(words, NULL, wordssize, now);
 				if(terminal_pos!=(size_t)-1){
 					unsigned terminal=get_terminal(now);
-					value_id[terminal] = value_find(values[terminal_pos]);
+					value_id[terminal] = value_array_index.lookup(values[terminal_pos]);
 				}
 			}
 
@@ -140,18 +143,18 @@ void DA::make_da(TreeFile &tf, unsigned unigram_type)
 	}
 	if(historysize!=0 && history[historysize-1]==1){
 		if(value_id[now]==0.0){
-			value_id[now] = value_find(-0.0);
+			value_id[now] = value_array_index.lookup(-0.0);
 		}
 		det_base(words, values, wordssize, now);
 	}else{
 		det_base(words, NULL, wordssize, now);
 		if(terminal_pos!=(size_t)-1){
 			unsigned terminal=get_terminal(now);
-			value_id[terminal] = value_find(values[terminal_pos]);
+			value_id[terminal] = value_array_index.lookup(values[terminal_pos]);
 		}
 	}
 
-	value_replace();
+	replace_value();
 	delete [] history;
 	delete [] words;
 	delete [] values;
@@ -165,10 +168,7 @@ void DA::dump(FILE *fp)
 	fwrite(base_array,sizeof(_base),max_index+1,fp);
 	fwrite(check_array,sizeof(int),max_index+1,fp);
 
-	fwrite(&varray_size,sizeof(unsigned),1,fp);
-	fwrite(value_array,sizeof(float),varray_size,fp);
 	logger << "DA[" << daid << "] da-size: " << max_index << Logger::endi;
-	logger << "DA[" << daid << "] val-size: " << varray_size << Logger::endi;
 }
 
 float DA::get_prob(int *word,int order){
@@ -217,6 +217,8 @@ float DA::get_prob(int *word,int order){
 }
 
 float DA::get_prob(int word, State &state){
+	_bowval bowval;
+
 	float bow = 0.0;
 	float prob = DALM_OOV_PROB;
 	unsigned short scount = state.get_count();
@@ -256,7 +258,8 @@ float DA::get_prob(int word, State &state){
 		if(next > 0){
 			terminal = da[nextid]->get_terminal(next);
 			state[i] = (StateId) terminal;
-			if(*((uint32_t *)&da[nextid]->value_array[-da[nextid]->check_array[terminal]])!=0x80000000UL){
+			bowval.bow = value_array[-da[nextid]->check_array[terminal]];
+			if(bowval.bits!=0x80000000UL){
 				state.set_count(i+1);
 			}
 			pos = next;
@@ -269,6 +272,7 @@ float DA::get_prob(int word, State &state){
 }
 
 void DA::init_state(int *word, unsigned short order, State &state){
+	_bowval bowval;
 	int pos = 0;
 	state.set_count(0);
 	state.set_daid(daid);
@@ -278,7 +282,8 @@ void DA::init_state(int *word, unsigned short order, State &state){
 			state.set_word(i, word[i]);
 			int terminal = get_terminal(next);
 			state[i] = (StateId) terminal;
-			if(*((uint32_t *)&value_array[-check_array[terminal]])!=0x80000000UL){
+			bowval.bow = value_array[-check_array[terminal]];
+			if(bowval.bits!=0x80000000UL){
 				state.set_count(i+1);
 			}
 			pos=next;
@@ -325,34 +330,7 @@ bool DA::checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bo
 	else return false; 
 }
 
-void DA::value_set(std::set<float> *value_set){
-	float tmp_val=0.0;
-	unsigned pos=0,count=1;
-
-	varray_size = value_set->size()+1;
-	vtable_size = (unsigned)(varray_size*1.4);
-
-	value_array = new float[varray_size];
-	value_table = new unsigned[vtable_size];
-
-	value_array[0] = -99;
-	for(unsigned i=0;i<vtable_size;i++){
-		value_table[i]=INT_MAX;
-	}
-
-	std::set<float>::iterator it = value_set->begin();
-	while(it!=value_set->end()){
-		tmp_val = (*it);
-		value_array[count] = tmp_val;
-		pos = value_insert(tmp_val);
-		value_table[pos]=count;
-
-		++it;
-		count++;
-	}
-}
-
-void DA::value_replace()
+void DA::replace_value()
 {
 	for(unsigned i=0;i<array_size;i++){
 		if(check_array[i]<0){
@@ -360,7 +338,7 @@ void DA::value_replace()
 		}
 
 		if(value_id[i]!=-1){
-			check_array[i]=0-value_id[i];
+			check_array[i]=-value_id[i];
 		}
 	}
 }
@@ -451,41 +429,6 @@ int DA::get_terminal(unsigned now)
 	return 1+base_array[now].base_val;
 }
 
-unsigned DA::value_insert(float tmp_val)
-{
-	unsigned tmp_pos=value_hash(tmp_val);
-
-	while(1){
-		if(value_table[tmp_pos]==INT_MAX){
-			break;
-		}else {
-			tmp_pos++;
-			if(tmp_pos==vtable_size){
-				tmp_pos=0;
-			}
-		}
-	}
-	return tmp_pos;
-}
-
-unsigned DA::value_find(float tmp_val)
-{
-	unsigned tmp_pos=value_hash(tmp_val);
-	while(1){
-		if(value_table[tmp_pos]==INT_MAX){
-			break;
-		}else if(value_array[value_table[tmp_pos]]==tmp_val){
-			return value_table[tmp_pos];
-		}else {
-			tmp_pos++;
-			if(tmp_pos==vtable_size){
-				tmp_pos=0;
-			}
-		}
-	}
-	return INT_MAX;
-}
-
 void DA::resize_array(unsigned newarray_size){
 	_base *temp_base = new _base[newarray_size];
 	memcpy(temp_base,base_array,array_size*sizeof(_base));
@@ -567,12 +510,5 @@ bool DA::bow_check(int length,unsigned int *ngram,float bow){
 	}
 
 	return false;
-}
-
-unsigned DA::value_hash(float tmp_val)
-{
-	unsigned int value = 0;
-	LMMurmur::MurmurHash3_x86_32(&tmp_val,sizeof(float),0x9e3779b9,&value); 
-	return value%vtable_size;
 }
 

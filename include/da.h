@@ -1,6 +1,7 @@
 #ifndef DA_H_
 #define DA_H_
 
+#include <stdint.h>
 #include <cstdio>
 
 #include <iostream>
@@ -11,6 +12,8 @@
 #include "state.h"
 #include "pthread_wrapper.h"
 #include "treefile.h"
+#include "value_array.h"
+#include "value_array_index.h"
 #include "logger.h"
 
 #define DALM_OOV_PROB -100.0
@@ -21,13 +24,18 @@ namespace DALM{
 		float logprob;
 	} _base;
 
+	typedef union{
+    float bow;
+    uint32_t bits;
+  } _bowval;
+
 	class DA{
 		public:
-			DA(size_t daid, size_t datotal, DA **neighbours, Logger &logger);
-			DA(FILE *fp, DA **neighbours, Logger &logger);
+			DA(size_t daid, size_t datotal, ValueArray &value_array, DA **neighbours, Logger &logger);
+			DA(FILE *fp, ValueArray &value_array, DA **neighbours, Logger &logger);
 			virtual ~DA();
 
-			void make_da(TreeFile &tf, unsigned unigram_type);
+			void make_da(TreeFile &tf, ValueArrayIndex &value_array_index, unsigned unigram_type);
 			void dump(FILE *fp);
 
 			float get_prob(int *word,int order);
@@ -37,32 +45,25 @@ namespace DALM{
 			/* depricated */
 			unsigned long int get_state(int *word,int order);
 
-
 			bool checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bool bow_presence);
-
-			void value_set(std::set<float> *value_set);
-			void value_replace();
 
 		private:
 			void det_base(int *word,float *val,unsigned amount,unsigned now);
 			int get_pos(int word,unsigned now);
 			int get_terminal(unsigned now);
-			unsigned value_insert(float tmp_val);
-			unsigned value_find(float tmp_val);
 			void resize_array(unsigned newarray_size);
+
+			void replace_value();
 
 			bool prob_check(int length, int order, unsigned int *ngram, float prob);
 			bool bow_check(int length, unsigned int * ngram, float bow);
-			unsigned value_hash(float tmp_val);
 
 			unsigned array_size;
 			_base *base_array;
 			int *check_array, *value_id;
-			float *value_array;
-			unsigned varray_size, vtable_size;
-			unsigned *value_table;
 			unsigned daid;
 			unsigned datotal;
+			ValueArray &value_array;
 			DA **da;
 
 			unsigned max_index;
@@ -73,14 +74,13 @@ namespace DALM{
 
 	class DABuilder : public PThreadWrapper {
 		public:
-			DABuilder(DA *da, TreeFile *tf, std::set<float> *value_set, size_t vocabsize)
-				:da(da), tf(tf), value_set(value_set), vocabsize(vocabsize){
+			DABuilder(DA *da, TreeFile *tf, ValueArrayIndex &value_array_index, size_t vocabsize)
+				:da(da), tf(tf), value_array_index(value_array_index), vocabsize(vocabsize){
 					finished=false;
 				}
 
 			virtual void run(){
-				da->value_set(value_set);
-				da->make_da(*tf,vocabsize);
+				da->make_da(*tf, value_array_index, vocabsize);
 				finished=true;
 			}
 
@@ -91,7 +91,7 @@ namespace DALM{
 		private:
 			DA *da;
 			TreeFile *tf;
-			std::set<float> *value_set;
+			ValueArrayIndex &value_array_index;
 			size_t vocabsize;
 			bool finished;
 	};

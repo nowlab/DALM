@@ -9,18 +9,17 @@ def configure(conf):
 	conf.env['CFLAGS']=['-O3', '-Wall', '-DNDEBUG']
 	conf.env['CXXFLAGS']=['-O3', '-Wall', '-DNDEBUG']
 	conf.env['LIB']=['pthread']
-	conf.env['INCLUDES']=['MurmurHash3','darts-clone']
+	conf.env['INCLUDES']=['darts-clone']
 
 def build(bld):
-	bld.recurse('MurmurHash3')
 	bld.recurse('scripts')
 	
 	projname = 'dalm'
 	includes = ['include']
-	use = [projname, 'MurmurHash3']
+	use = [projname]
 
 	###### INSTALL HEADERS ######
-	headers = ['arpafile.h', 'da.h', 'dalm.h', 'logger.h', 'pthread_wrapper.h', 'state.h', 'treefile.h', 'vocabulary.h', 'version.h']
+	headers = ['arpafile.h', 'da.h', 'dalm.h', 'logger.h', 'pthread_wrapper.h', 'state.h', 'treefile.h', 'value_array.h', 'value_array_index.h', 'vocabulary.h', 'version.h']
 	headers = map(lambda x:'include/%s'%x, headers)
 	bld.install_files('${PREFIX}/include', headers)
 
@@ -29,7 +28,7 @@ def build(bld):
 	bld.install_files('${PREFIX}/darts-clone', headers)
 
 	###### BUILD DALM LIB ######
-	files = ['lm.cpp', 'da.cpp', 'vocabulary.cpp', 'logger.cpp']
+	files = ['lm.cpp', 'da.cpp', 'vocabulary.cpp', 'value_array.cpp', 'logger.cpp']
 	files = map(lambda x: 'src/%s'%x, files)
 	
 	lib = bld.stlib(source=' '.join(files), target=projname)
