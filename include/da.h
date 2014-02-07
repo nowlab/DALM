@@ -19,15 +19,20 @@
 #define DALM_OOV_PROB -100.0
 
 namespace DALM{
-	typedef union{
+	typedef union {
 		int base_val;
 		float logprob;
 	} _base;
 
-	typedef union{
+	typedef union {
     float bow;
     uint32_t bits;
   } _bowval;
+
+	typedef struct {
+		_base base;
+		int check;
+	} DAPair;
 
 	class DA{
 		public:
@@ -58,16 +63,16 @@ namespace DALM{
 			bool prob_check(int length, int order, unsigned int *ngram, float prob);
 			bool bow_check(int length, unsigned int * ngram, float bow);
 
-			unsigned array_size;
-			_base *base_array;
-			int *check_array, *value_id;
-			unsigned daid;
-			unsigned datotal;
+			unsigned int array_size;
+			DAPair *da_array;
+			int *value_id;
+			unsigned int daid;
+			unsigned int datotal;
 			ValueArray &value_array;
 			DA **da;
 
-			unsigned max_index;
-			unsigned first_empty_index;
+			unsigned int max_index;
+			unsigned int first_empty_index;
 
 			Logger &logger;
 	};

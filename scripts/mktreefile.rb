@@ -42,6 +42,7 @@ while arpafp.gets
 
 	if not bow.nil?
 		bowpath = ngram.reverse
+		tmpfp.puts "#{bowpath.join(" ")}\t"
 		tmpfp.puts "#{bowpath.join(" ")} <#>\t#{bow}"
 	end
 end

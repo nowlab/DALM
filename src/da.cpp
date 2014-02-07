@@ -24,16 +24,15 @@ DA::DA(
 			da(neighbours), 
 			logger(logger){
 	array_size=3;
-	base_array = new _base[array_size];
-	check_array = new int[array_size];
+	da_array = new DAPair[array_size];
 	value_id = new int[array_size];
 
 	max_index=0;
 	first_empty_index=1;
 
 	for(unsigned i=0;i<array_size;i++){
-		base_array[i].base_val = -1;
-		check_array[i] = -1;
+		da_array[i].base.base_val = -1;
+		da_array[i].check = -1;
 		value_id[i] = -1;
 	}  
 }
@@ -46,11 +45,9 @@ DA::DA(FILE *fp, ValueArray &value_array, DA **neighbours, Logger &logger)
 	fread(&max_index,sizeof(unsigned),1,fp);
 	array_size = max_index+1;
 
-	base_array = new _base[array_size];
-	check_array = new int[array_size];
+	da_array = new DAPair[array_size];
 
-	fread(base_array,sizeof(_base),array_size,fp);
-	fread(check_array,sizeof(int),array_size,fp);
+	fread(da_array, sizeof(DAPair), array_size, fp);
 
 	value_id = NULL;
 	first_empty_index=0;
@@ -58,15 +55,14 @@ DA::DA(FILE *fp, ValueArray &value_array, DA **neighbours, Logger &logger)
 }
 
 DA::~DA(){
-	if(base_array != NULL) delete [] base_array;
-	if(check_array != NULL) delete [] check_array;
+	if(da_array != NULL) delete [] da_array;
 	if(value_id != NULL) delete [] value_id;
 }
 
 void DA::make_da(TreeFile &tf, ValueArrayIndex &value_array_index, unsigned unigram_type)
 {
 	resize_array(unigram_type*20);
-	base_array[0].base_val=0;
+	da_array[0].base.base_val = 0;
 
 	size_t total = tf.get_totalsize();
 	logger << "DA[" << daid << "] total=" << total << Logger::endi;
@@ -165,8 +161,7 @@ void DA::dump(FILE *fp)
 	fwrite(&daid,sizeof(unsigned),1,fp);
 	fwrite(&datotal,sizeof(unsigned),1,fp);
 	fwrite(&max_index,sizeof(unsigned),1,fp);
-	fwrite(base_array,sizeof(_base),max_index+1,fp);
-	fwrite(check_array,sizeof(int),max_index+1,fp);
+	fwrite(da_array, sizeof(DAPair), max_index+1, fp);
 
 	logger << "DA[" << daid << "] da-size: " << max_index << Logger::endi;
 }
@@ -180,7 +175,7 @@ float DA::get_prob(int *word,int order){
 	int unigram_terminal = da[unigram_daid]->get_terminal(0);
 	int unigram_prob_pos = da[unigram_daid]->get_pos(word[0], unigram_terminal);
 	if(unigram_prob_pos > 0){
-		tmp_prob = da[unigram_daid]->base_array[unigram_prob_pos].logprob;
+		tmp_prob = da[unigram_daid]->da_array[unigram_prob_pos].base.logprob;
 	}else{ // DALM_OOV_PROB
 		tmp_prob = DALM_OOV_PROB;
 	}
@@ -191,10 +186,10 @@ float DA::get_prob(int *word,int order){
 
 		while(current_pos > 0 && length < order){
 			int terminal = get_terminal(current_pos);
-			tmp_bow += value_array[-check_array[terminal]];
+			tmp_bow += value_array[-da_array[terminal].check];
 			int prob_pos = get_pos(word[0], terminal);
 			if(prob_pos > 0){
-				tmp_prob = base_array[prob_pos].logprob;
+				tmp_prob = da_array[prob_pos].base.logprob;
 				tmp_bow = 0.0;
 			}
 
@@ -228,10 +223,10 @@ float DA::get_prob(int word, State &state){
 		StateId &sid = state[i];
 		int prob_pos = get_pos(word, sid);
 		if(prob_pos > 0){
-			prob = base_array[prob_pos].logprob;
+			prob = da_array[prob_pos].base.logprob;
 			break;
 		}else{
-			bow += value_array[-check_array[sid]];
+			bow += value_array[-da_array[sid].check];
 		}
 	}
 
@@ -245,7 +240,7 @@ float DA::get_prob(int word, State &state){
 	if(i == -1){
 		int prob_pos = da[nextid]->get_pos(word, terminal);
 		if(prob_pos > 0){
-			prob = da[nextid]->base_array[prob_pos].logprob;
+			prob = da[nextid]->da_array[prob_pos].base.logprob;
 			i++;
 		}
 	}
@@ -258,7 +253,7 @@ float DA::get_prob(int word, State &state){
 		if(next > 0){
 			terminal = da[nextid]->get_terminal(next);
 			state[i] = (StateId) terminal;
-			bowval.bow = value_array[-da[nextid]->check_array[terminal]];
+			bowval.bow = value_array[-da[nextid]->da_array[terminal].check];
 			if(bowval.bits!=0x80000000UL){
 				state.set_count(i+1);
 			}
@@ -282,7 +277,7 @@ void DA::init_state(int *word, unsigned short order, State &state){
 			state.set_word(i, word[i]);
 			int terminal = get_terminal(next);
 			state[i] = (StateId) terminal;
-			bowval.bow = value_array[-check_array[terminal]];
+			bowval.bow = value_array[-da_array[terminal].check];
 			if(bowval.bits!=0x80000000UL){
 				state.set_count(i+1);
 			}
@@ -304,7 +299,7 @@ unsigned long int DA::get_state(int *word,int order){
 			int next_pos = get_pos(word[length+1], current_pos);
 			if(next_pos > 0){
 				int terminal = get_terminal(current_pos);
-				if(value_array[-check_array[terminal]]!=0){
+				if(value_array[-da_array[terminal].check]!=0){
 					current_state = next_pos;
 				}
 				current_pos = next_pos;
@@ -333,12 +328,12 @@ bool DA::checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bo
 void DA::replace_value()
 {
 	for(unsigned i=0;i<array_size;i++){
-		if(check_array[i]<0){
-			check_array[i]=INT_MIN;
+		if(da_array[i].check<0){
+			da_array[i].check=INT_MIN;
 		}
 
 		if(value_id[i]!=-1){
-			check_array[i]=-value_id[i];
+			da_array[i].check=-value_id[i];
 		}
 	}
 }
@@ -359,24 +354,24 @@ void DA::det_base(int *word,float *val,unsigned amount,unsigned now){
 
 	int base=first_empty_index-word[minindex];
 	while(base < 0){
-		base-=check_array[base+word[minindex]];
+		base-=da_array[base+word[minindex]].check;
 	}
 
 	unsigned k=0; 
 	while(k < amount){
 		pos[k]=base+word[k];
 
-		if(pos[k] < array_size && check_array[pos[k]]>=0){
-			base-=check_array[base+word[minindex]];
+		if(pos[k] < array_size && da_array[pos[k]].check>=0){
+			base-=da_array[base+word[minindex]].check;
 			k=0;
 		}else{
 			k++;
 		}
 	}
 
-	base_array[now].base_val=base;
+	da_array[now].base.base_val=base;
 	if(now==0){
-		check_array[0]=0;
+		da_array[0].check=0;
 	}
 
 	unsigned max_jump = base + word[maxindex]+1;   
@@ -385,21 +380,21 @@ void DA::det_base(int *word,float *val,unsigned amount,unsigned now){
 	}
 
 	for(unsigned i=0;i < amount; i++){
-		unsigned next_index = pos[i] - check_array[pos[i]];
+		unsigned next_index = pos[i] - da_array[pos[i]].check;
 
 		unsigned int pre_index;
 		if(pos[i]==first_empty_index){
-			base_array[next_index].base_val = INT_MIN;
-			first_empty_index = first_empty_index-check_array[first_empty_index];
+			da_array[next_index].base.base_val = INT_MIN;
+			first_empty_index = first_empty_index-da_array[first_empty_index].check;
 		}else{
-			pre_index = pos[i]+base_array[pos[i]].base_val;
+			pre_index = pos[i]+da_array[pos[i]].base.base_val;
 
-			base_array[next_index].base_val += base_array[pos[i]].base_val;
-			check_array[pre_index] += check_array[pos[i]];
+			da_array[next_index].base.base_val += da_array[pos[i]].base.base_val;
+			da_array[pre_index].check += da_array[pos[i]].check;
 		}
 
-		check_array[pos[i]]=now;
-		if(val!=NULL) base_array[pos[i]].logprob = val[i];
+		da_array[pos[i]].check=now;
+		if(val!=NULL) da_array[pos[i]].base.logprob = val[i];
 	}
 
 	if(max_index < pos[maxindex]){ 
@@ -414,10 +409,10 @@ int DA::get_pos(int word,unsigned now){
 		return -1;
 	}
 
-	unsigned dest=word+base_array[now].base_val;
+	unsigned dest=word+da_array[now].base.base_val;
 	if(dest>max_index){
 		return -1;
-	}else if(check_array[dest]==(int)now){
+	}else if(da_array[dest].check==(int)now){
 		return dest;
 	}else{
 		return -1;
@@ -426,27 +421,21 @@ int DA::get_pos(int word,unsigned now){
 
 int DA::get_terminal(unsigned now)
 {
-	return 1+base_array[now].base_val;
+	return 1+da_array[now].base.base_val;
 }
 
 void DA::resize_array(unsigned newarray_size){
-	_base *temp_base = new _base[newarray_size];
-	memcpy(temp_base,base_array,array_size*sizeof(_base));
-	delete [] base_array;
-	base_array = temp_base;
+	DAPair *temp_array = new DAPair[newarray_size];
+	memcpy(temp_array, da_array, array_size*sizeof(DAPair));
+	delete [] da_array;
+	da_array = temp_array;
 
 	int *temp = new int[newarray_size];
-	memcpy(temp,check_array,array_size*sizeof(int));
-	delete [] check_array;
-	check_array = temp;
-
-	temp = new int[newarray_size];
-	memcpy(temp,value_id,array_size*sizeof(int));
+	memcpy(temp, value_id, array_size*sizeof(int));
 	delete [] value_id;
 	value_id = temp;
 
-	memset(base_array+array_size,0xFF,(newarray_size-array_size)*sizeof(_base));
-	memset(check_array+array_size,0xFF,(newarray_size-array_size)*sizeof(int));
+	memset(da_array+array_size,0xFF,(newarray_size-array_size)*sizeof(DAPair));
 	memset(value_id+array_size,0xFF,(newarray_size-array_size)*sizeof(int));
 
 	array_size = newarray_size;
@@ -473,10 +462,10 @@ bool DA::prob_check(int length, int order, unsigned int *ngram, float prob){
 		return false;
 	}
 
-	if(base_array[pos].logprob == prob){
+	if(da_array[pos].base.logprob == prob){
 		return true;
 	}else{
-		logger << "DA[" << daid << "][prob] prob value error! answer=" << prob << " stored=" << base_array[pos].logprob << Logger::ende;
+		logger << "DA[" << daid << "][prob] prob value error! answer=" << prob << " stored=" << da_array[pos].base.logprob << Logger::ende;
 		return false;
 	}
 
@@ -501,7 +490,7 @@ bool DA::bow_check(int length,unsigned int *ngram,float bow){
 		return false;
 	}
 
-	tmp_bow = value_array[-check_array[pos]];
+	tmp_bow = value_array[-da_array[pos].check];
 	if(tmp_bow == bow){
 		return true;
 	}else{
