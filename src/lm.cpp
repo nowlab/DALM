@@ -51,19 +51,24 @@ LM::~LM() {
 }
 
 float LM::query(VocabId *ngram, size_t n){
-	for(size_t i=1;i<n;i++){
-		if(ngram[i] == vocab.unk()){
-			n=i;
-			break;
-		}
-	}
-	
 	size_t daid = (n==1)?(ngram[0]%danum):(ngram[1]%danum);
-	return da[daid]->get_prob((int*)ngram, n);
+	return da[daid]->get_prob(ngram, n);
 }
 
 float LM::query(VocabId word, State &state){
-	return da[state.get_daid()]->get_prob((int)word, state);
+	return da[state.get_daid()]->get_prob(word, state);
+}
+
+float LM::query(VocabId word, State &state, Fragment &f){
+	return da[state.get_daid()]->get_prob(word, state, f);
+}
+
+float LM::query(VocabId word, const Fragment &f, State &state_left, Gap &gap){
+	return da[((uint64_t)f.get_state_id())>>32]->get_prob(word, f, state_left, gap);
+}
+
+float LM::query(VocabId word, const Fragment &fprev, State &state_left, Gap &gap, Fragment &fnew){
+	return da[((uint64_t)fprev.get_state_id())>>32]->get_prob(word, fprev, state_left, gap, fnew);
 }
 
 void LM::init_state(State &state){
@@ -71,12 +76,16 @@ void LM::init_state(State &state){
 	std::string stagstart = "<s>";
 	ngram[0] = vocab.lookup(stagstart.c_str());
 	size_t daid = ngram[0] % danum;
-	da[daid]->init_state((int*)ngram, 1, state);
+	da[daid]->init_state(ngram, 1, state);
 }
 
 void LM::set_state(VocabId *ngram, size_t n, State &state){
 	size_t daid = ngram[0] % danum;
-	da[daid]->init_state((int*)ngram, n, state);
+	da[daid]->init_state(ngram, n, state);
+}
+
+void LM::set_state(State &state, State &state_prev, Gap &gap){
+	da[state.get_daid()]->init_state(state, state_prev, gap);
 }
 
 /* depricated */
@@ -89,7 +98,7 @@ StateId LM::get_state(VocabId *ngram, size_t n){
 	}
 
 	size_t daid = ngram[0]%danum;
-	return ((daid << 32)|da[daid]->get_state((int*)ngram,n));
+	return ((daid << 32)|da[daid]->get_state(ngram,n));
 }
 
 void LM::errorcheck(std::string &pathtoarpa){

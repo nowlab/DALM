@@ -166,131 +166,354 @@ void DA::dump(FILE *fp)
 	logger << "DA[" << daid << "] da-size: " << max_index << Logger::endi;
 }
 
-float DA::get_prob(int *word,int order){
-	int length=0;
-	float tmp_bow = 0.0;
-	float tmp_prob = 0.0;
+float DA::get_prob(VocabId *word, size_t order){
+  float tmp_prob = 0.0;
+  float tmp_bow = 0.0;
+  int current_pos=0;
+  int terminal;
+  unsigned int prob_pos, next;
+  VocabId target_word = word[0];
+  for(unsigned int i = 1; i < order; i++){
+    next = da_array[current_pos].base.base_val+word[i];
+    if(next < array_size && da_array[next].check == current_pos){
+      current_pos = next;
 
-	int unigram_daid = word[0]%datotal;
-	int unigram_terminal = da[unigram_daid]->get_terminal(0);
-	int unigram_prob_pos = da[unigram_daid]->get_pos(word[0], unigram_terminal);
-	if(unigram_prob_pos > 0){
-		tmp_prob = da[unigram_daid]->da_array[unigram_prob_pos].base.logprob;
-	}else{ // DALM_OOV_PROB
-		tmp_prob = DALM_OOV_PROB;
+      terminal = get_terminal(next);
+      prob_pos = da_array[terminal].base.base_val+target_word;
+      if(prob_pos < array_size && da_array[prob_pos].check == terminal){
+        tmp_prob = da_array[prob_pos].base.logprob;
+        tmp_bow = 0.0;
+      }else{
+        tmp_bow += value_array[-da_array[terminal].check];
+      }
+    }else{
+      break;
+    }
+  }
+
+  if(tmp_prob==0.0){
+    // case for backoff to unigrams.
+    DA *unigram_da = da[target_word%datotal];
+    terminal = unigram_da->get_terminal(0);
+    prob_pos = unigram_da->da_array[terminal].base.base_val+target_word;
+    if(prob_pos < unigram_da->array_size
+        && unigram_da->da_array[prob_pos].check == terminal){
+      return unigram_da->da_array[prob_pos].base.logprob+tmp_bow;
+    }else{
+      return DALM_OOV_PROB+tmp_bow;
+    }
+  }else{
+    return tmp_prob+tmp_bow;
+  }
+}
+
+float DA::get_prob(VocabId word, State &state){
+  float bow = 0.0;
+  float prob = DALM_OOV_PROB;
+  unsigned short scount = state.get_count();
+  unsigned int prob_pos, next;
+  int pos = 0;
+  int terminal;
+
+  int i = scount-1;
+  for(; i >= 0; i--){
+    StateId &sid = state[i];
+    prob_pos = da_array[sid].base.base_val + word;
+    if(prob_pos < array_size && da_array[prob_pos].check==(int)sid){
+      prob = da_array[prob_pos].base.logprob;
+      break;
+    }else{
+      bow += state.get_bow(i);
+    }
+  }
+
+  state.set_count(0);
+  state.push_word(word);
+
+  int nextid = word%datotal;
+  DA *next_da = da[nextid];
+  state.set_daid(nextid);
+
+  if(i == -1){
+    terminal = next_da->get_terminal(0);
+    prob_pos = next_da->da_array[terminal].base.base_val + word;
+    if(prob_pos < next_da->array_size && next_da->da_array[prob_pos].check==terminal){
+      prob = next_da->da_array[prob_pos].base.logprob;
+      i++;
+    }
+  }
+
+  scount++;
+  size_t max_depth = (scount>state.get_order())?state.get_order():scount;
+  _bowval _bow;
+  for(size_t i = 0; i < max_depth; i++){
+    next = next_da->da_array[pos].base.base_val + state.get_word(i);
+    if(next < next_da->array_size && next_da->da_array[next].check==pos){
+      terminal = next_da->get_terminal(next);
+      _bow.bow = next_da->value_array[-next_da->da_array[terminal].check];
+
+      state[i] = (StateId) terminal;
+      state.set_bow(i, _bow.bow);
+
+      if(_bow.bits!=0x80000000UL){
+        state.set_count(i+1);
+				state.set_head_pos(next);
+      }
+      pos = next;
+    }else{
+      break;
+    }
+  }
+
+  return prob+bow;
+}
+
+float DA::get_prob(VocabId word, State &state, Fragment &f){
+  float bow = 0.0;
+  float prob = DALM_OOV_PROB;
+  unsigned short scount = state.get_count();
+	unsigned short depth = scount;
+	StateId sid_pos=state.get_head_pos();
+  unsigned int prob_pos, next;
+  int pos = 0;
+  int terminal;
+
+  int i = scount-1;
+  for(; i >= 0; i--){
+    StateId &sid = state[i];
+    prob_pos = da_array[sid].base.base_val + word;
+    if(prob_pos < array_size && da_array[prob_pos].check==(int)sid){
+      prob = da_array[prob_pos].base.logprob;
+			
+      break;
+    }else{
+      bow += state.get_bow(i);
+    }
+  }
+
+  state.set_count(0);
+  state.push_word(word);
+
+  int nextid = word%datotal;
+  DA *next_da = da[nextid];
+  state.set_daid(nextid);
+
+  if(i == -1){
+    terminal = next_da->get_terminal(0);
+    prob_pos = next_da->da_array[terminal].base.base_val + word;
+    if(prob_pos < next_da->array_size && next_da->da_array[prob_pos].check==terminal){
+      prob = next_da->da_array[prob_pos].base.logprob;
+      i++;
+    }
+  }
+
+  scount++;
+  size_t max_depth = (scount>state.get_order())?state.get_order():scount;
+  _bowval _bow;
+  for(size_t i = 0; i < max_depth; i++){
+    next = next_da->da_array[pos].base.base_val + state.get_word(i);
+    if(next < next_da->array_size && next_da->da_array[next].check==pos){
+      terminal = next_da->get_terminal(next);
+      _bow.bow = next_da->value_array[-next_da->da_array[terminal].check];
+
+      state[i] = (StateId) terminal;
+      state.set_bow(i, _bow.bow);
+
+      if(_bow.bits!=0x80000000UL){
+        state.set_count(i+1);
+				state.set_head_pos(next);
+      }
+      pos = next;
+    }else{
+      break;
+    }
+  }
+
+	prob += bow;
+	sid_pos = (((uint64_t)daid) << 32) | sid_pos;
+	f.set(sid_pos, depth, prob);
+
+  return prob;
+}
+
+float DA::get_prob(VocabId word, const Fragment &f, State &state, Gap &gap){
+	size_t g = gap.get_gap();
+	unsigned short depth = f.get_depth();
+	StateId sid = f.get_state_id()&0xFFFFFFFFULL;
+	float prob = f.get_prob();
+	DA *target_da = this;
+	if(depth < g){
+		return prob;
+	}else if(g==0){
+		if(state.get_count()==0) return prob;
+		target_da = da[state.get_word(0)%datotal];
 	}
 
-	if(order > 1){
-		int current_pos = get_pos(word[1], 0);
-		length=1;
+	unsigned short order = state.get_order();
+	unsigned short depth_max = (state.get_count()+g < order)?state.get_count()+g:order;
+	unsigned short state_pos = 0;
+	int pos = sid;
+	int terminal;
+	unsigned int next;
+	unsigned int prob_pos;
 
-		while(current_pos > 0 && length < order){
-			int terminal = get_terminal(current_pos);
-			tmp_bow += value_array[-da_array[terminal].check];
-			int prob_pos = get_pos(word[0], terminal);
-			if(prob_pos > 0){
-				tmp_prob = da_array[prob_pos].base.logprob;
-				tmp_bow = 0.0;
-			}
+	for(unsigned short d=depth+1; d <= depth_max; d++){
+    next = target_da->da_array[pos].base.base_val + state.get_word(state_pos);
+    if(next < target_da->array_size && target_da->da_array[next].check==pos){
+      terminal = target_da->get_terminal(next);
 
-			if(length+1 < order){
-				int next_pos = get_pos(word[length+1], current_pos);
-				if(next_pos > 0){
-					current_pos = next_pos;
-					length++;
-				}else{
-					break;
-				}
+			prob_pos = target_da->da_array[terminal].base.base_val + word;
+			if(prob_pos < target_da->array_size && target_da->da_array[prob_pos].check==terminal){
+				prob = target_da->da_array[prob_pos].base.logprob;
 			}else{
-				break;
+      	prob += target_da->value_array[-target_da->da_array[terminal].check];
 			}
+
+      pos = next;
+    }else{
+      break;
+    }
+		depth = d;
+
+		state_pos++;
+	}
+
+	return prob;
+}
+
+float DA::get_prob(VocabId word, const Fragment &fprev, State &state, Gap &gap, Fragment &fnew){
+	size_t g = gap.get_gap();
+	unsigned short depth = fprev.get_depth();
+	StateId sid = fprev.get_state_id()&0xFFFFFFFFULL;
+	float prob = fprev.get_prob();
+	DA *target_da = this;
+	uint64_t target_daid = daid;
+	if(depth < g){
+		fnew = fprev;
+		return prob;
+	}else if(g==0){
+		if(state.get_count()==0){
+			fnew = fprev;
+		 	return prob;
 		}
-		return tmp_prob+tmp_bow;
-	}else{
-		return tmp_prob;
+		target_daid = state.get_word(0)%datotal;
+		target_da = da[target_daid];
+	}
+
+	unsigned short order = state.get_order();
+	unsigned short depth_max = (state.get_count()+g < order)?state.get_count()+g:order;
+	unsigned short state_pos = 0;
+
+
+	int pos = sid;
+	int terminal;
+	unsigned int next;
+	unsigned int prob_pos;
+
+	for(unsigned short d=depth+1; d <= depth_max; d++){
+    next = target_da->da_array[pos].base.base_val + state.get_word(state_pos);
+    if(next < target_da->array_size && target_da->da_array[next].check==pos){
+      terminal = target_da->get_terminal(next);
+
+			prob_pos = target_da->da_array[terminal].base.base_val + word;
+			if(prob_pos < target_da->array_size && target_da->da_array[prob_pos].check==terminal){
+				prob = target_da->da_array[prob_pos].base.logprob;
+			}else{
+      	prob += target_da->value_array[-target_da->da_array[terminal].check];
+			}
+
+      pos = next;
+    }else{
+      break;
+    }
+		depth = d;
+
+		state_pos++;
+	}
+
+	StateId sid_new=pos;
+	sid_new = (((uint64_t)target_daid) << 32) | sid_new;
+	fnew.set(sid_new, depth, prob);
+
+	return prob;
+}
+
+void DA::init_state(VocabId *word, size_t order, State &state){
+  int pos = 0;
+  unsigned int next;
+  int terminal;
+
+  state.set_count(0);
+  state.set_daid(daid);
+  _bowval _bow;
+  for(unsigned int i = 0; i < order; i++){
+    next = da_array[pos].base.base_val + word[i];
+    if(next < array_size && da_array[next].check==pos){
+      terminal = get_terminal(next);
+      _bow.bow = value_array[-da_array[terminal].check];
+
+      state[i] = (StateId) terminal;
+      state.set_word(i, word[i]);
+      state.set_bow(i, _bow.bow);
+      if(_bow.bits!=0x80000000UL){
+        state.set_count(i+1);
+				state.set_head_pos(next);
+      }
+      pos=next;
+    }else{
+      break;
+    }
 	}
 }
 
-float DA::get_prob(int word, State &state){
+void DA::init_state(State &state, State &state_prev, Gap &gap){
+	size_t g = gap.get_gap();
+	size_t scount = state.get_count();
+	size_t scount_prev = state_prev.get_count();
+	if(scount < g || scount_prev==0){
+		return;
+	}
+	DA *target_da = this;
+	if(scount==0){
+		size_t target_daid = state_prev.get_word(0)%datotal;
+		target_da = da[target_daid];
+		state.set_daid(target_daid);
+	}
+
+	int pos = state.get_head_pos();
+
+	size_t order = state.get_order();
+	size_t max_depth = (g+scount_prev < order)?g+scount_prev:order;
+	size_t next;
+	int terminal;
 	_bowval bowval;
+	int previdx = 0;
 
-	float bow = 0.0;
-	float prob = DALM_OOV_PROB;
-	unsigned short scount = state.get_count();
-
-	int i = scount-1;
-	for(; i >= 0; i--){
-		StateId &sid = state[i];
-		int prob_pos = get_pos(word, sid);
-		if(prob_pos > 0){
-			prob = da_array[prob_pos].base.logprob;
-			break;
-		}else{
-			bow += value_array[-da_array[sid].check];
-		}
-	}
-
-	state.set_count(0);
-	state.push_word(word);
-
-	int nextid = word%datotal;
-	state.set_daid(nextid);
-	int pos = 0;
-	int terminal = da[nextid]->get_terminal(pos);
-	if(i == -1){
-		int prob_pos = da[nextid]->get_pos(word, terminal);
-		if(prob_pos > 0){
-			prob = da[nextid]->da_array[prob_pos].base.logprob;
-			i++;
-		}
-	}
-
-	scount++;
-	size_t max_depth = (scount>state.get_order())?state.get_order():scount;
-	//std::cout << "max_depth=" << max_depth << std::endl;
-	for(size_t i = 0; i < max_depth; i++){
-		int next = da[nextid]->get_pos(state.get_word(i), pos);
-		if(next > 0){
-			terminal = da[nextid]->get_terminal(next);
+	for(size_t i = scount; i < max_depth; i++){
+		VocabId word = state_prev.get_word(previdx);
+		next = target_da->da_array[pos].base.base_val + word;
+		if(next < target_da->array_size && target_da->da_array[next].check==pos){
+			terminal = target_da->get_terminal(next);
+			bowval.bow = target_da->value_array[-target_da->da_array[terminal].check];
+		
 			state[i] = (StateId) terminal;
-			bowval.bow = value_array[-da[nextid]->da_array[terminal].check];
+			state.set_word(i, word);
+			state.set_bow(i, bowval.bow);
 			if(bowval.bits!=0x80000000UL){
 				state.set_count(i+1);
-			}
+				state.set_head_pos(next);
+    	}
 			pos = next;
 		}else{
 			break;
 		}
-	}
-
-	return prob+bow;
-}
-
-void DA::init_state(int *word, unsigned short order, State &state){
-	_bowval bowval;
-	int pos = 0;
-	state.set_count(0);
-	state.set_daid(daid);
-	for(unsigned short i = 0; i < order; i++){
-		int next = get_pos(word[i], pos);
-		if(next > 0){
-			state.set_word(i, word[i]);
-			int terminal = get_terminal(next);
-			state[i] = (StateId) terminal;
-			bowval.bow = value_array[-da_array[terminal].check];
-			if(bowval.bits!=0x80000000UL){
-				state.set_count(i+1);
-			}
-			pos=next;
-		}else{
-			break;
-		}
+		previdx++;
 	}
 }
 
 /* depricated */
-unsigned long int DA::get_state(int *word,int order){
-	int length=0;
+unsigned long int DA::get_state(VocabId *word, size_t order){
+	size_t length=0;
 	int current_pos = get_pos(word[length], 0);
 	unsigned long int current_state = 0;
 
@@ -370,9 +593,6 @@ void DA::det_base(int *word,float *val,unsigned amount,unsigned now){
 	}
 
 	da_array[now].base.base_val=base;
-	if(now==0){
-		da_array[0].check=0;
-	}
 
 	unsigned max_jump = base + word[maxindex]+1;   
 	if(max_jump > array_size){

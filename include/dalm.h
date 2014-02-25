@@ -15,7 +15,11 @@
 typedef unsigned long int StateId;
 
 namespace DALM {
+	class Fragment;
+
 	class LM {
+		friend class Fragment;
+
 		public:
 			LM(std::string pathtoarpa, std::string pathtotreefile, Vocabulary &vocab, size_t dividenum, Logger &logger);
 			LM(std::string dumpfilepath, Vocabulary &vocab, Logger &logger);
@@ -23,9 +27,15 @@ namespace DALM {
 
 			float query(VocabId *ngram, size_t n);
 			float query(VocabId word, State &state);
+
+			float query(VocabId word, State &state, Fragment &f);
+			float query(VocabId word, const Fragment &f, State &state_left, Gap &gap);
+			float query(VocabId word, const Fragment &fprev, State &state_left, Gap &gap, Fragment &fnew);
+
 			void init_state(State &state);
 			void set_state(VocabId *ngram, size_t n, State &state);
-
+			void set_state(State &state, State &state_prev, Gap &gap);
+			
 			/* depricated */
 			StateId get_state(VocabId *ngram, size_t n);
 

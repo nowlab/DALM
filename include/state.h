@@ -9,74 +9,93 @@ typedef unsigned long int StateId;
 namespace DALM{
 	class State{
 		public:
-			State(unsigned short modelorder): order(modelorder-1){
+			State(unsigned short modelorder): order(modelorder-1), count(0), head(order-1), daid(0), head_pos(0){
 				sids = new StateId[order];
 				memset(sids, 0, sizeof(StateId)*order);
 				vids = new VocabId[order];
 				memset(vids, 0, sizeof(VocabId)*order);
-				count = 0;
-				daid = 0;
-				head = order-1;
+				bows = new float[order];
+				memset(bows, 0, sizeof(float)*order);
 			}
 
-			State(const State &s):order(s.order), count(s.count), head(s.head), daid(s.daid){
+			State(const State &s):order(s.order), count(s.count), head(s.head), daid(s.daid), head_pos(s.head_pos){
 				sids = new StateId[order];
 				memcpy(sids, s.sids, sizeof(StateId)*order);
 				vids = new VocabId[order];
 				memcpy(vids, s.vids, sizeof(VocabId)*order);
+				bows = new float[order];
+				memcpy(bows, s.bows, sizeof(float)*order);
 			}
 			
 			virtual ~State(){
 				delete [] sids;
 				delete [] vids;
+				delete [] bows;
 			}
 			
-			StateId &operator[](size_t i){
+			inline StateId &operator[](size_t i){
 				return sids[i];
 			}
 
-			StateId get_sid(size_t i) const{
+			inline StateId get_head_pos(){
+				return head_pos;
+			}
+
+			inline void set_head_pos(StateId sid){
+				head_pos = sid;
+			}
+
+			inline StateId get_sid(size_t i) const{
 				return sids[i];
 			}
 
-			void set_count(unsigned short c){
+			inline float get_bow(size_t i) const{
+				return bows[i];
+			}
+
+			inline void set_bow(size_t i, float bow) const{
+				bows[i] = bow;
+			}
+
+			inline void set_count(unsigned short c){
 				count = c;
 			}
 
-			unsigned short get_count(){
+			inline unsigned short get_count(){
 				return count;
 			}
 
-			void set_daid(size_t id){
+			inline void set_daid(size_t id){
 				daid = id;
 			}
 
-			size_t get_daid(){
+			inline size_t get_daid(){
 				return daid;
 			}
 
-			void refresh(){
+			inline void refresh(){
 				count=0;
+				push_word(DALM_UNK_WORD);
 			}
 
-			void push_word(VocabId word){
+			inline void push_word(VocabId word){
 				head = (head+order-1)%order;
 				vids[head] = word;
 			}
 			
-			void set_word(size_t i, VocabId word){
+			inline void set_word(size_t i, VocabId word){
 				vids[(head+i)%order] = word;
 			}
 
-			size_t get_word(size_t i){
+			inline size_t get_word(size_t i){
 				return vids[(head+i)%order];
 			}
 
-			unsigned short get_order(){
+			inline unsigned short get_order(){
 				return order;
 			}
 
-			int compare(State *state){
+			inline int compare(State *state){
 				for(size_t i = 0; i < count && i < state->count; i++){
 					int diff = get_word(i) - state->get_word(i);
 					if(diff!=0) return diff;
@@ -90,7 +109,9 @@ namespace DALM{
 			unsigned short head;
 			StateId *sids;
 			VocabId *vids;
+			float *bows;
 			size_t daid;
+			StateId head_pos;
 	};
 }
 

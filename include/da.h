@@ -14,6 +14,7 @@
 #include "treefile.h"
 #include "value_array.h"
 #include "value_array_index.h"
+#include "fragment.h"
 #include "logger.h"
 
 #define DALM_OOV_PROB -100.0
@@ -43,12 +44,17 @@ namespace DALM{
 			void make_da(TreeFile &tf, ValueArrayIndex &value_array_index, unsigned unigram_type);
 			void dump(FILE *fp);
 
-			float get_prob(int *word,int order);
-			float get_prob(int word, State &state);
-			void init_state(int *word, unsigned short order, State &state);
+			float get_prob(VocabId *word, size_t order);
+			float get_prob(VocabId word, State &state);
+			float get_prob(VocabId word, State &state, Fragment &f);
+			float get_prob(VocabId word, const Fragment &f, State &state, Gap &gap);
+			float get_prob(VocabId word, const Fragment &fprev, State &state, Gap &gap, Fragment &fnew);
+
+			void init_state(VocabId *word, size_t order, State &state);
+			void init_state(State &state, State &state_prev, Gap &gap);
 
 			/* depricated */
-			unsigned long int get_state(int *word,int order);
+			unsigned long int get_state(VocabId *word, size_t order);
 
 			bool checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bool bow_presence);
 
