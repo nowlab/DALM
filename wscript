@@ -28,7 +28,7 @@ def build(bld):
 	bld.install_files('${PREFIX}/darts-clone', headers)
 
 	###### BUILD DALM LIB ######
-	files = ['lm.cpp', 'da.cpp', 'vocabulary.cpp', 'value_array.cpp', 'logger.cpp']
+	files = ['lm.cpp', 'da.cpp', 'fragment.cpp', 'vocabulary.cpp', 'value_array.cpp', 'logger.cpp']
 	files = map(lambda x: 'src/%s'%x, files)
 	
 	lib = bld.stlib(source=' '.join(files), target=projname)

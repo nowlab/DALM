@@ -63,12 +63,20 @@ float LM::query(VocabId word, State &state, Fragment &f){
 	return da[state.get_daid()]->get_prob(word, state, f);
 }
 
-float LM::query(VocabId word, const Fragment &f, State &state_left, Gap &gap){
-	return da[((uint64_t)f.get_state_id())>>32]->get_prob(word, f, state_left, gap);
+float LM::query(const Fragment &f, State &state_prev, Gap &gap){
+	if(gap.get_gap()==0){
+		return da[state_prev.get_word(0)%danum]->get_prob(f, state_prev, gap);
+	}else{
+		return da[f.daid]->get_prob(f, state_prev, gap);
+	}
 }
 
-float LM::query(VocabId word, const Fragment &fprev, State &state_left, Gap &gap, Fragment &fnew){
-	return da[((uint64_t)fprev.get_state_id())>>32]->get_prob(word, fprev, state_left, gap, fnew);
+float LM::query(const Fragment &fprev, State &state_prev, Gap &gap, Fragment &fnew){
+	if(gap.get_gap()==0){
+		return da[state_prev.get_word(0)%danum]->get_prob(fprev, state_prev, gap, fnew);
+	}else{
+		return da[fprev.daid]->get_prob(fprev, state_prev, gap, fnew);
+	}
 }
 
 void LM::init_state(State &state){
@@ -85,7 +93,11 @@ void LM::set_state(VocabId *ngram, size_t n, State &state){
 }
 
 void LM::set_state(State &state, State &state_prev, Gap &gap){
-	da[state.get_daid()]->init_state(state, state_prev, gap);
+	if(state.get_count()==0){
+		da[state_prev.get_word(0)%danum]->init_state(state, state_prev, gap);
+	}else{
+		da[state.get_daid()]->init_state(state, state_prev, gap);
+	}
 }
 
 /* depricated */
@@ -183,14 +195,14 @@ void LM::build(std::string &pathtoarpa, std::string &pathtotreefile, size_t divi
 }
 
 void LM::dumpParams(FILE *fp){
-	fwrite(&danum, sizeof(size_t), 1, fp);
+	fwrite(&danum, sizeof(unsigned char), 1, fp);
 	for(size_t i = 0; i < danum; i++){
 		da[i]->dump(fp);
 	}
 }
 
 void LM::readParams(FILE *fp){
-	fread(&danum, sizeof(size_t), 1, fp);
+	fread(&danum, sizeof(unsigned char), 1, fp);
 	da = new DA*[danum];
 	for(size_t i = 0; i < danum; i++){
 		da[i] = new DA(fp, *value_array, da, logger);

@@ -4,22 +4,31 @@
 #include<map>
 
 namespace DALM{
+	typedef union {
+		float val;
+		uint32_t bits;
+	} FloatBits;
+
 	class ValueArrayIndex{
 		public:
 			ValueArrayIndex(ValueArray &ary){
 				size_t len = ary.length();
 
 				for(size_t i = 0; i < len; i++){
-					value_index[ary[i]] = i;
+					FloatBits d;
+					d.val = ary[i];
+					value_index[d.bits] = i;
 				}
 			}
 
 			size_t lookup(float value){
-				return value_index.find(value)->second;
+				FloatBits d;
+				d.val = value;
+				return value_index.find(d.bits)->second;
 			}
 
 		private:
-			std::map<float, size_t> value_index;
+			std::map<uint32_t, size_t> value_index;
 	};
 }
 

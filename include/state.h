@@ -9,7 +9,7 @@ typedef unsigned long int StateId;
 namespace DALM{
 	class State{
 		public:
-			State(unsigned short modelorder): order(modelorder-1), count(0), head(order-1), daid(0), head_pos(0){
+			State(unsigned char modelorder): order(modelorder-1), count(0), head(order-1), daid(0), head_pos(0){
 				sids = new StateId[order];
 				memset(sids, 0, sizeof(StateId)*order);
 				vids = new VocabId[order];
@@ -33,7 +33,7 @@ namespace DALM{
 				delete [] bows;
 			}
 			
-			inline StateId &operator[](size_t i){
+			inline StateId &operator[](unsigned char i){
 				return sids[i];
 			}
 
@@ -45,11 +45,11 @@ namespace DALM{
 				head_pos = sid;
 			}
 
-			inline StateId get_sid(size_t i) const{
+			inline StateId get_sid(unsigned char i) const{
 				return sids[i];
 			}
 
-			inline float get_bow(size_t i) const{
+			inline float get_bow(unsigned char i) const{
 				return bows[i];
 			}
 
@@ -57,19 +57,19 @@ namespace DALM{
 				bows[i] = bow;
 			}
 
-			inline void set_count(unsigned short c){
+			inline void set_count(unsigned char c){
 				count = c;
 			}
 
-			inline unsigned short get_count(){
+			inline unsigned char get_count(){
 				return count;
 			}
 
-			inline void set_daid(size_t id){
+			inline void set_daid(unsigned char id){
 				daid = id;
 			}
 
-			inline size_t get_daid(){
+			inline unsigned char get_daid(){
 				return daid;
 			}
 
@@ -83,15 +83,15 @@ namespace DALM{
 				vids[head] = word;
 			}
 			
-			inline void set_word(size_t i, VocabId word){
+			inline void set_word(unsigned char i, VocabId word){
 				vids[(head+i)%order] = word;
 			}
 
-			inline size_t get_word(size_t i){
+			inline VocabId get_word(unsigned char i){
 				return vids[(head+i)%order];
 			}
 
-			inline unsigned short get_order(){
+			inline unsigned char get_order(){
 				return order;
 			}
 
@@ -104,13 +104,13 @@ namespace DALM{
 			}
 
 		private:
-			unsigned short order;
-			unsigned short count;
-			unsigned short head;
+			unsigned char order;
+			unsigned char count;
+			unsigned char head;
 			StateId *sids;
 			VocabId *vids;
 			float *bows;
-			size_t daid;
+			unsigned char daid;
 			StateId head_pos;
 	};
 }

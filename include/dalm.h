@@ -29,8 +29,8 @@ namespace DALM {
 			float query(VocabId word, State &state);
 
 			float query(VocabId word, State &state, Fragment &f);
-			float query(VocabId word, const Fragment &f, State &state_left, Gap &gap);
-			float query(VocabId word, const Fragment &fprev, State &state_left, Gap &gap, Fragment &fnew);
+			float query(const Fragment &f, State &state_prev, Gap &gap);
+			float query(const Fragment &fprev, State &state_prev, Gap &gap, Fragment &fnew);
 
 			void init_state(State &state);
 			void set_state(VocabId *ngram, size_t n, State &state);
@@ -58,7 +58,7 @@ namespace DALM {
 
 			DA **da;
 			ValueArray *value_array;
-			size_t danum;
+			unsigned char danum;
 			Vocabulary &vocab;
 			Logger &logger;
 	};

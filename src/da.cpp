@@ -13,8 +13,8 @@
 using namespace DALM;
 
 DA::DA(
-		size_t daid, 
-		size_t datotal, 
+		unsigned char daid, 
+		unsigned char datotal, 
 		ValueArray &value_array, 
 		DA **neighbours, 
 		Logger &logger)
@@ -39,8 +39,8 @@ DA::DA(
 
 DA::DA(FILE *fp, ValueArray &value_array, DA **neighbours, Logger &logger)
 	: value_array(value_array), logger(logger){
-	fread(&daid,sizeof(unsigned),1,fp);
-	fread(&datotal,sizeof(unsigned),1,fp);
+	fread(&daid,sizeof(unsigned char),1,fp);
+	fread(&datotal,sizeof(unsigned char),1,fp);
 	da = neighbours;
 	fread(&max_index,sizeof(unsigned),1,fp);
 	array_size = max_index+1;
@@ -158,22 +158,22 @@ void DA::make_da(TreeFile &tf, ValueArrayIndex &value_array_index, unsigned unig
 
 void DA::dump(FILE *fp)
 {
-	fwrite(&daid,sizeof(unsigned),1,fp);
-	fwrite(&datotal,sizeof(unsigned),1,fp);
+	fwrite(&daid,sizeof(unsigned char),1,fp);
+	fwrite(&datotal,sizeof(unsigned char),1,fp);
 	fwrite(&max_index,sizeof(unsigned),1,fp);
 	fwrite(da_array, sizeof(DAPair), max_index+1, fp);
 
 	logger << "DA[" << daid << "] da-size: " << max_index << Logger::endi;
 }
 
-float DA::get_prob(VocabId *word, size_t order){
+float DA::get_prob(VocabId *word, unsigned char order){
   float tmp_prob = 0.0;
   float tmp_bow = 0.0;
   int current_pos=0;
   int terminal;
   unsigned int prob_pos, next;
   VocabId target_word = word[0];
-  for(unsigned int i = 1; i < order; i++){
+  for(unsigned char i = 1; i < order; i++){
     next = da_array[current_pos].base.base_val+word[i];
     if(next < array_size && da_array[next].check == current_pos){
       current_pos = next;
@@ -210,7 +210,7 @@ float DA::get_prob(VocabId *word, size_t order){
 float DA::get_prob(VocabId word, State &state){
   float bow = 0.0;
   float prob = DALM_OOV_PROB;
-  unsigned short scount = state.get_count();
+  unsigned char scount = state.get_count();
   unsigned int prob_pos, next;
   int pos = 0;
   int terminal;
@@ -244,9 +244,9 @@ float DA::get_prob(VocabId word, State &state){
   }
 
   scount++;
-  size_t max_depth = (scount>state.get_order())?state.get_order():scount;
+  unsigned char max_depth = (scount>state.get_order())?state.get_order():scount;
   _bowval _bow;
-  for(size_t i = 0; i < max_depth; i++){
+  for(unsigned char i = 0; i < max_depth; i++){
     next = next_da->da_array[pos].base.base_val + state.get_word(i);
     if(next < next_da->array_size && next_da->da_array[next].check==pos){
       terminal = next_da->get_terminal(next);
@@ -271,8 +271,8 @@ float DA::get_prob(VocabId word, State &state){
 float DA::get_prob(VocabId word, State &state, Fragment &f){
   float bow = 0.0;
   float prob = DALM_OOV_PROB;
-  unsigned short scount = state.get_count();
-	unsigned short depth = scount;
+  unsigned char scount = state.get_count();
+	unsigned char depth = scount;
 	StateId sid_pos=state.get_head_pos();
   unsigned int prob_pos, next;
   int pos = 0;
@@ -284,7 +284,6 @@ float DA::get_prob(VocabId word, State &state, Fragment &f){
     prob_pos = da_array[sid].base.base_val + word;
     if(prob_pos < array_size && da_array[prob_pos].check==(int)sid){
       prob = da_array[prob_pos].base.logprob;
-			
       break;
     }else{
       bow += state.get_bow(i);
@@ -294,7 +293,7 @@ float DA::get_prob(VocabId word, State &state, Fragment &f){
   state.set_count(0);
   state.push_word(word);
 
-  int nextid = word%datotal;
+  unsigned char nextid = word%datotal;
   DA *next_da = da[nextid];
   state.set_daid(nextid);
 
@@ -308,9 +307,9 @@ float DA::get_prob(VocabId word, State &state, Fragment &f){
   }
 
   scount++;
-  size_t max_depth = (scount>state.get_order())?state.get_order():scount;
+  unsigned char max_depth = (scount>state.get_order())?state.get_order():scount;
   _bowval _bow;
-  for(size_t i = 0; i < max_depth; i++){
+  for(unsigned char i = 0; i < max_depth; i++){
     next = next_da->da_array[pos].base.base_val + state.get_word(i);
     if(next < next_da->array_size && next_da->da_array[next].check==pos){
       terminal = next_da->get_terminal(next);
@@ -330,43 +329,43 @@ float DA::get_prob(VocabId word, State &state, Fragment &f){
   }
 
 	prob += bow;
-	sid_pos = (((uint64_t)daid) << 32) | sid_pos;
-	f.set(sid_pos, depth, prob);
+	f.pos = (((uint64_t)word) << 32) | sid_pos;
+	f.depth = depth;
+	f.daid = daid;
+	f.prob = prob;
 
   return prob;
 }
 
-float DA::get_prob(VocabId word, const Fragment &f, State &state, Gap &gap){
+float DA::get_prob(const Fragment &f, State &state, Gap &gap){
 	size_t g = gap.get_gap();
-	unsigned short depth = f.get_depth();
-	StateId sid = f.get_state_id()&0xFFFFFFFFULL;
-	float prob = f.get_prob();
-	DA *target_da = this;
+	unsigned char depth = f.depth;
+	float prob = f.prob;
 	if(depth < g){
 		return prob;
-	}else if(g==0){
-		if(state.get_count()==0) return prob;
-		target_da = da[state.get_word(0)%datotal];
+	}else if(state.get_count()==0){
+		return prob;
 	}
 
-	unsigned short order = state.get_order();
-	unsigned short depth_max = (state.get_count()+g < order)?state.get_count()+g:order;
-	unsigned short state_pos = 0;
-	int pos = sid;
-	int terminal;
+	VocabId word = f.pos>>32;
+	int pos = f.pos&0xFFFFFFFFULL;
+	unsigned char order = state.get_order();
+	unsigned char depth_max = (state.get_count()+g < order)?state.get_count()+g:order;
+	unsigned char state_pos = 0;
 	unsigned int next;
 	unsigned int prob_pos;
+	int terminal;
 
-	for(unsigned short d=depth+1; d <= depth_max; d++){
-    next = target_da->da_array[pos].base.base_val + state.get_word(state_pos);
-    if(next < target_da->array_size && target_da->da_array[next].check==pos){
-      terminal = target_da->get_terminal(next);
+	for(unsigned char d=depth+1; d <= depth_max; d++){
+    next = da_array[pos].base.base_val + state.get_word(state_pos);
+    if(next < array_size && da_array[next].check==pos){
+      terminal = get_terminal(next);
 
-			prob_pos = target_da->da_array[terminal].base.base_val + word;
-			if(prob_pos < target_da->array_size && target_da->da_array[prob_pos].check==terminal){
-				prob = target_da->da_array[prob_pos].base.logprob;
+			prob_pos = da_array[terminal].base.base_val + word;
+			if(prob_pos < array_size && da_array[prob_pos].check==terminal){
+				prob = da_array[prob_pos].base.logprob;
 			}else{
-      	prob += target_da->value_array[-target_da->da_array[terminal].check];
+      	prob += value_array[-da_array[terminal].check];
 			}
 
       pos = next;
@@ -381,45 +380,37 @@ float DA::get_prob(VocabId word, const Fragment &f, State &state, Gap &gap){
 	return prob;
 }
 
-float DA::get_prob(VocabId word, const Fragment &fprev, State &state, Gap &gap, Fragment &fnew){
+float DA::get_prob(const Fragment &fprev, State &state, Gap &gap, Fragment &fnew){
 	size_t g = gap.get_gap();
-	unsigned short depth = fprev.get_depth();
-	StateId sid = fprev.get_state_id()&0xFFFFFFFFULL;
-	float prob = fprev.get_prob();
-	DA *target_da = this;
-	uint64_t target_daid = daid;
+	unsigned char depth = fprev.depth;
+	float prob = fprev.prob;
 	if(depth < g){
 		fnew = fprev;
 		return prob;
-	}else if(g==0){
-		if(state.get_count()==0){
-			fnew = fprev;
-		 	return prob;
-		}
-		target_daid = state.get_word(0)%datotal;
-		target_da = da[target_daid];
+	}else if(state.get_count()==0){
+		fnew = fprev;
+	 	return prob;
 	}
 
-	unsigned short order = state.get_order();
-	unsigned short depth_max = (state.get_count()+g < order)?state.get_count()+g:order;
-	unsigned short state_pos = 0;
-
-
-	int pos = sid;
+	VocabId word = fprev.pos>>32;
+	int pos = fprev.pos&0xFFFFFFFFULL;
+	unsigned char order = state.get_order();
+	unsigned char depth_max = (state.get_count()+g < order)?state.get_count()+g:order;
+	unsigned char state_pos = 0;
 	int terminal;
 	unsigned int next;
 	unsigned int prob_pos;
 
-	for(unsigned short d=depth+1; d <= depth_max; d++){
-    next = target_da->da_array[pos].base.base_val + state.get_word(state_pos);
-    if(next < target_da->array_size && target_da->da_array[next].check==pos){
-      terminal = target_da->get_terminal(next);
+	for(unsigned char d=depth+1; d <= depth_max; d++){
+    next = da_array[pos].base.base_val + state.get_word(state_pos);
+    if(next < array_size && da_array[next].check==pos){
+      terminal = get_terminal(next);
 
-			prob_pos = target_da->da_array[terminal].base.base_val + word;
-			if(prob_pos < target_da->array_size && target_da->da_array[prob_pos].check==terminal){
-				prob = target_da->da_array[prob_pos].base.logprob;
+			prob_pos = da_array[terminal].base.base_val + word;
+			if(prob_pos < array_size && da_array[prob_pos].check==terminal){
+				prob = da_array[prob_pos].base.logprob;
 			}else{
-      	prob += target_da->value_array[-target_da->da_array[terminal].check];
+      	prob += value_array[-da_array[terminal].check];
 			}
 
       pos = next;
@@ -431,14 +422,15 @@ float DA::get_prob(VocabId word, const Fragment &fprev, State &state, Gap &gap, 
 		state_pos++;
 	}
 
-	StateId sid_new=pos;
-	sid_new = (((uint64_t)target_daid) << 32) | sid_new;
-	fnew.set(sid_new, depth, prob);
+	fnew.pos = (((uint64_t)word) << 32) | pos;
+	fnew.daid = daid;
+	fnew.depth = depth;
+	fnew.prob = prob;
 
 	return prob;
 }
 
-void DA::init_state(VocabId *word, size_t order, State &state){
+void DA::init_state(VocabId *word, unsigned char order, State &state){
   int pos = 0;
   unsigned int next;
   int terminal;
@@ -446,7 +438,7 @@ void DA::init_state(VocabId *word, size_t order, State &state){
   state.set_count(0);
   state.set_daid(daid);
   _bowval _bow;
-  for(unsigned int i = 0; i < order; i++){
+  for(unsigned char i = 0; i < order; i++){
     next = da_array[pos].base.base_val + word[i];
     if(next < array_size && da_array[next].check==pos){
       terminal = get_terminal(next);
@@ -468,33 +460,27 @@ void DA::init_state(VocabId *word, size_t order, State &state){
 
 void DA::init_state(State &state, State &state_prev, Gap &gap){
 	size_t g = gap.get_gap();
-	size_t scount = state.get_count();
-	size_t scount_prev = state_prev.get_count();
+	unsigned char scount = state.get_count();
+	unsigned char scount_prev = state_prev.get_count();
 	if(scount < g || scount_prev==0){
 		return;
-	}
-	DA *target_da = this;
-	if(scount==0){
-		size_t target_daid = state_prev.get_word(0)%datotal;
-		target_da = da[target_daid];
-		state.set_daid(target_daid);
 	}
 
 	int pos = state.get_head_pos();
 
-	size_t order = state.get_order();
-	size_t max_depth = (g+scount_prev < order)?g+scount_prev:order;
+	unsigned char order = state.get_order();
+	unsigned char max_depth = (g+scount_prev < order)?g+scount_prev:order;
 	size_t next;
 	int terminal;
 	_bowval bowval;
 	int previdx = 0;
 
-	for(size_t i = scount; i < max_depth; i++){
+	for(unsigned char i = scount; i < max_depth; i++){
 		VocabId word = state_prev.get_word(previdx);
-		next = target_da->da_array[pos].base.base_val + word;
-		if(next < target_da->array_size && target_da->da_array[next].check==pos){
-			terminal = target_da->get_terminal(next);
-			bowval.bow = target_da->value_array[-target_da->da_array[terminal].check];
+		next = da_array[pos].base.base_val + word;
+		if(next < array_size && da_array[next].check==pos){
+			terminal = get_terminal(next);
+			bowval.bow = value_array[-da_array[terminal].check];
 		
 			state[i] = (StateId) terminal;
 			state.set_word(i, word);
@@ -512,7 +498,7 @@ void DA::init_state(State &state, State &state_prev, Gap &gap){
 }
 
 /* depricated */
-unsigned long int DA::get_state(VocabId *word, size_t order){
+unsigned long int DA::get_state(VocabId *word, unsigned char order){
 	size_t length=0;
 	int current_pos = get_pos(word[length], 0);
 	unsigned long int current_state = 0;

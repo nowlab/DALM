@@ -37,26 +37,26 @@ namespace DALM{
 
 	class DA{
 		public:
-			DA(size_t daid, size_t datotal, ValueArray &value_array, DA **neighbours, Logger &logger);
+			DA(unsigned char daid, unsigned char datotal, ValueArray &value_array, DA **neighbours, Logger &logger);
 			DA(FILE *fp, ValueArray &value_array, DA **neighbours, Logger &logger);
 			virtual ~DA();
 
 			void make_da(TreeFile &tf, ValueArrayIndex &value_array_index, unsigned unigram_type);
 			void dump(FILE *fp);
 
-			float get_prob(VocabId *word, size_t order);
+			float get_prob(VocabId *word, unsigned char order);
 			float get_prob(VocabId word, State &state);
 			float get_prob(VocabId word, State &state, Fragment &f);
-			float get_prob(VocabId word, const Fragment &f, State &state, Gap &gap);
-			float get_prob(VocabId word, const Fragment &fprev, State &state, Gap &gap, Fragment &fnew);
+			float get_prob(const Fragment &f, State &state, Gap &gap);
+			float get_prob(const Fragment &fprev, State &state, Gap &gap, Fragment &fnew);
 
-			void init_state(VocabId *word, size_t order, State &state);
+			void init_state(VocabId *word, unsigned char order, State &state);
 			void init_state(State &state, State &state_prev, Gap &gap);
 
 			/* depricated */
-			unsigned long int get_state(VocabId *word, size_t order);
+			unsigned long int get_state(VocabId *word, unsigned char order);
 
-			bool checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bool bow_presence);
+			bool checkinput(unsigned short n, unsigned int *ngram,float bow,float prob,bool bow_presence);
 
 		private:
 			void det_base(int *word,float *val,unsigned amount,unsigned now);
@@ -67,13 +67,13 @@ namespace DALM{
 			void replace_value();
 
 			bool prob_check(int length, int order, unsigned int *ngram, float prob);
-			bool bow_check(int length, unsigned int * ngram, float bow);
+			bool bow_check(int length, unsigned int *ngram, float bow);
 
 			unsigned int array_size;
 			DAPair *da_array;
 			int *value_id;
-			unsigned int daid;
-			unsigned int datotal;
+			unsigned char daid;
+			unsigned char datotal;
 			ValueArray &value_array;
 			DA **da;
 
