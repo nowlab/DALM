@@ -93,11 +93,11 @@ void LM::set_state(VocabId *ngram, size_t n, State &state){
 }
 
 void LM::set_state(State &state, State &state_prev, Gap &gap){
-	if(state.get_count()==0){
-		da[state_prev.get_word(0)%danum]->init_state(state, state_prev, gap);
-	}else{
-		da[state.get_daid()]->init_state(state, state_prev, gap);
+	if(state_prev.get_count()==0){
+		state.set_count(0);
+		return;
 	}
+	da[state_prev.get_daid()]->init_state(state, state_prev, gap);
 }
 
 /* depricated */

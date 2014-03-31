@@ -462,29 +462,37 @@ void DA::init_state(State &state, State &state_prev, Gap &gap){
 	size_t g = gap.get_gap();
 	unsigned char scount = state.get_count();
 	unsigned char scount_prev = state_prev.get_count();
-	if(scount < g || scount_prev==0){
-		return;
+	unsigned char order = state_prev.get_order();
+
+	for(unsigned char i = 0; i < g; i++){
+		state.push_word(state_prev.get_word(g-i-1));
 	}
 
-	int pos = state.get_head_pos();
+	state.set_daid(daid);
 
-	unsigned char order = state.get_order();
-	unsigned char max_depth = (g+scount_prev < order)?g+scount_prev:order;
+	for(unsigned char i = 0; i < scount_prev; i++){
+		state[i] = state_prev[i];
+		state.set_bow(i, state_prev.get_bow(i));
+	}
+
+	int pos = state_prev.get_head_pos();
+	state.set_head_pos(pos);
+	state.set_count(scount_prev);
+
+	unsigned char max_depth = (scount+scount_prev>order)?order:scount+scount_prev;
 	size_t next;
 	int terminal;
 	_bowval bowval;
-	int previdx = 0;
 
-	for(unsigned char i = scount; i < max_depth; i++){
-		VocabId word = state_prev.get_word(previdx);
-		next = da_array[pos].base.base_val + word;
+	for(unsigned char i = scount_prev; i < max_depth; i++){
+		next = da_array[pos].base.base_val + state.get_word(i);
 		if(next < array_size && da_array[next].check==pos){
 			terminal = get_terminal(next);
 			bowval.bow = value_array[-da_array[terminal].check];
 		
 			state[i] = (StateId) terminal;
-			state.set_word(i, word);
 			state.set_bow(i, bowval.bow);
+
 			if(bowval.bits!=0x80000000UL){
 				state.set_count(i+1);
 				state.set_head_pos(next);
@@ -493,7 +501,6 @@ void DA::init_state(State &state, State &state_prev, Gap &gap){
 		}else{
 			break;
 		}
-		previdx++;
 	}
 }
 
