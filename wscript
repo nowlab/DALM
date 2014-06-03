@@ -8,11 +8,11 @@ def configure(conf):
 	conf.load('compiler_cxx')
 	
 	# for debug
-	option = '-g'
+	#option = '-g'
 	#option = '-g -pg'
 
 	# normal optimization.
-	#option = '-O3 -Wall -DNDEBUG -g'
+	option = '-O3 -Wall -DNDEBUG -g'
 	#option = '-O3 -Wall -DNDEBUG -g -pg'
 
 	conf.env['CFLAGS']=option.split(" ")
