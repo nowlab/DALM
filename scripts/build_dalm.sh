@@ -6,6 +6,7 @@ if [ $# -ne 3 ]; then
 fi
 
 ARPA=$1
+OPTMETHOD=embedding
 DIVNUM=$2
 OUTPUT=$3
 
@@ -43,18 +44,22 @@ fi
 echo "MKWORDDICT : `date`"
 $MKWORDDICT $ARPA $WORDDICT $WORDIDS
 
-echo "MKTREEFILE : `date`"
-$MKTREEFILE $ARPA $TREE
+if [ "$OPTMETHOD" = "embedding" ]; then
+	$MKTREEFILE $ARPA $TREE
+fi
 
 echo "TRIE_DUMPER : `date`"
 LC_ALL=C $DUMPER --arpa $ARPA $DUMPEDARPA
-LC_ALL=C $DUMPER --tree $TREE $DUMPEDTREE
-
-echo "CLEANING A TREE FILE : `date`"
-rm $TREE
+if [ "$OPTMETHOD" = "embedding" ]; then
+	LC_ALL=C $DUMPER --tree $TREE $DUMPEDTREE
+	echo "CLEANING A TREE FILE : `date`"
+	rm $TREE
+fi
 
 echo "DALM_BUILDER : `date`"
-LC_ALL=C $BUILDER $DUMPEDARPA $DUMPEDTREE $WORDDICT $WORDIDS $DABINMODEL $WORDBIN $DIVNUM
+if [ "$OPTMETHOD" = "embedding" ]; then
+	LC_ALL=C $BUILDER embedding $DUMPEDARPA $DUMPEDTREE $WORDDICT $WORDIDS $DABINMODEL $WORDBIN $DIVNUM
+fi
 
 echo "GENERATING AN INIFILE : `date`"
 echo "TYPE=1" > $INI
@@ -64,7 +69,9 @@ echo "ARPA=`basename $ARPA`" >> $INI
 echo "WORDSTXT=$WORDDICTFN" >> $INI
 
 echo "CLEANING DUMPFILES : `date`"
-rm $DUMPEDARPA $DUMPEDTREE
+if [ "$OPTMETHOD" = "embedding" ]; then
+	rm $DUMPEDARPA $DUMPEDTREE
+fi
 
 echo "CLEANING A WORDID FILE : `date`"
 rm $WORDIDS

@@ -2,7 +2,7 @@
 #define VERSION_H_
 
 #define DALM_FILE_TYPE 0xDA73
-#define DALM_FILE_VERSION 5
+#define DALM_FILE_VERSION 6
 
 #define DALM_OPT_UNDEFINED 0
 #define DALM_OPT_EMBEDDING 1
@@ -34,7 +34,7 @@ namespace DALM {
 			Version(FILE *fp, Logger &logger){
 				unsigned int ftype;
 				unsigned int fversion;
-				unsigned int fopt;
+				unsigned int fopt=0;
 
 				fread(&ftype, sizeof(unsigned int), 1, fp);
 				fread(&fversion, sizeof(unsigned int), 1, fp);
@@ -54,7 +54,7 @@ namespace DALM {
 					}
 					opt=fopt;
 				}else{
-					logger << "[Version::Version] Unrecognized version. version=" << fversion << " If you update DALM, please rebuild the model." << Logger::ende;
+					logger << "[Version::Version] Unrecognized version. version=" << fversion << " If you update DALM, please rebuild the model" << Logger::ende;
 					throw "[Version::Version] Unrecognized version.";
 				}
 			}

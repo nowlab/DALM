@@ -41,11 +41,12 @@ void read_ini(const char *inifile, string &model, string &words, string &wordstx
 }
 
 int main(int argc, char **argv){
-	if(argc != 2){
-		cerr << "Usage : " << argv[0] << " dalm-ini-file" << endl;
+	if(argc != 3){
+		cerr << "Usage : " << argv[0] << " order dalm-ini-file" << endl;
 		return 1;
 	}
-	string path = argv[1];
+	unsigned char order = atoi(argv[1]);
+	string path = argv[2];
   string inifile= path + "/dalm.ini";
 
 	/////////////////////
@@ -87,10 +88,10 @@ int main(int argc, char **argv){
 	DALM::Vocabulary vocab(words, logger);
 
 	// Load the language model.
-	DALM::LM lm(model, vocab, logger);
+	DALM::LM lm(model, vocab, order, logger);
 
 	// Prepare a state.
-	DALM::State state(NGRAMORDER);
+	DALM::State state;
 	
 	//////////////
 	// QUERYING //

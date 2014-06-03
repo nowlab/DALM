@@ -1,27 +1,38 @@
-#include<cstdio>
-#include<cstdlib>
+#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
 
-#include<string>
-#include<iostream>
+#include <string>
+#include <iostream>
 
-#include<logger.h>
-#include <dalm.h>
+#include "logger.h"
+#include "dalm.h"
+#include "version.h"
 
 using namespace std;
 
 void build_DALM(int argc, char **argv, DALM::Logger &logger){
-	char *arpa = argv[1];
-	char *tree = argv[2];
-	char *worddict = argv[3];
-	char *wids = argv[4];
-	char *binmodel = argv[5];
-	char *binwdict = argv[6];
-	size_t dividenum = atoi(argv[7]);
+	char *opt = argv[1];
+	char *arpa = argv[2];
+	char *tree = argv[3];
+	char *worddict = argv[4];
+	char *wids = argv[5];
+	char *binmodel = argv[6];
+	char *binwdict = argv[7];
+	size_t dividenum = atoi(argv[8]);
+	
+	unsigned int method=DALM_OPT_UNDEFINED;
+	
+	string optmethod(opt);
+	if(optmethod=="embedding"){
+		method = DALM_OPT_EMBEDDING;
+	}
+	
 	logger << "Building vocabfile." << DALM::Logger::endi;	
-	DALM::Vocabulary *vocab = new DALM::Vocabulary(string(worddict),string(binwdict),string(wids), 0, logger);
+	DALM::Vocabulary *vocab = new DALM::Vocabulary(string(worddict), string(binwdict), string(wids), 0, logger);
 
 	logger << "Building DALM." << DALM::Logger::endi;
-	DALM::LM *dalm = new DALM::LM(string(arpa),string(tree),*vocab,dividenum,logger);
+	DALM::LM *dalm = new DALM::LM(string(arpa), string(tree), *vocab, dividenum, method, logger);
 
 	logger << "Dumping DALM." << DALM::Logger::endi;
 	dalm->dump(string(binmodel));
@@ -33,8 +44,9 @@ void build_DALM(int argc, char **argv, DALM::Logger &logger){
 }
 
 int main(int argc, char **argv){
-	if(argc != 8){
-		cout << "Usage: " << argv[0] << " dumped-arpa-file dumped-tree-file worddict word-id-file output-binmodel output-binworddict divide-number" << endl;
+	if(argc != 9){
+		cout << "Usage: " << argv[0] << " optmethod dumped-arpa-file dumped-tree-file worddict word-id-file output-binmodel output-binworddict divide-number" << endl;
+		cout << " optmethod=embedding" << endl;
 		return 1;
 	}
 

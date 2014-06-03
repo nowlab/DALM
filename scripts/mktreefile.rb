@@ -49,53 +49,112 @@ end
 arpafp.close
 tmpfp.close
 
+def puts_inserted(fpout, inserted)
+	if inserted[-1]=="<#>"
+		fput.puts "#{inserted.join(" ")}\t0.0"
+	else
+		fpout.puts "#{inserted.join(" ")}\t"
+	end
+end
+
 system("LC_ALL=C sort #{output}.tmp > #{output}.tmp2")
 system("LC_ALL=C rm #{output}.tmp")
+
 open("#{output}.tmp2","r:ASCII-8BIT"){|fp|
 	open("#{output}.tmp3","w:ASCII-8BIT"){|fpout|
-		pre = []
-		preword = nil
+		ngram_prev=[]
 		while fp.gets
-			$_.chomp!
+			ngram, value = $_.chomp.split("\t")
 
-			ngram, value = $_.split("\t")
-			ngram = ngram.split
-			if pre.size == ngram.size-1 and pre == ngram[0..-2]
-				preword = ngram[-1]
-				ngram[-1] = "\x01 #{ngram[-1]}"
-				fpout.puts "#{ngram.join(" ")}\t#{value}"
-				ngramnums[ngram.size-1]+=1
-			else
-				branch = pre.size
-				pre.each_index{|i|
-					if pre[i] != ngram[i]
+			ngram=ngram.split
+			if ngram_prev.size < ngram.size
+				branch=ngram_prev.size
+				ngram_prev.each_with_index{|word,i|
+					if ngram[i]!=word
+						branch=i
+						break
+					end
+				}
+			
+				common_words = ngram_prev[0...branch]
+				(branch...(ngram.size-1)).each{|i|
+					inserted = common_words + ngram[branch..i]
+					puts_inserted(fpout, inserted)
+				}
+			else # ngram_prev.size >= ngram.size
+				branch = ngram.size
+				ngram.each_with_index{|word, i|
+					if ngram_prev[i]!=word
 						branch = i
 						break
 					end
 				}
-				if branch == pre.size and preword and ngram[-2] and preword == ngram[-2]
-					branch+=1
-				end
-
+				
+				common_words = ngram[0...branch]
 				(branch...(ngram.size-1)).each{|i|
-					if i > 0
-						fpout.puts "#{ngram[0..(i-1)].join(" ")} \x01 #{ngram[i]}\t"
-					else
-						fpout.puts "\x01 #{ngram[i]}\t"
-					end
-					ngramnums[i]+=1
+					inserted = common_words + ngram[branch..i]
+					puts_inserted(fpout, inserted)
 				}
-				preword = ngram[-1]
-				ngram[-1] = "\x01 #{ngram[-1]}"
-				fpout.puts "#{ngram.join(" ")}\t#{value}"
-				ngramnums[ngram.size-1]+=1
-				pre = ngram[0..-2]
 			end
+			if ngram.size > 1 and ngram[-2]=="<#>"
+				fpout.puts "#{ngram.join(" ")}\t"
+				fpout.puts "#{ngram[-1]} #{ngram[0...-1].join(" ")} \x01<#>\t#{value}"
+			else
+				fpout.puts "#{ngram.join(" ")}\t#{value}"
+			end
+			ngram_prev = ngram
 		end
 	}
 }
 
 system("LC_ALL=C rm #{output}.tmp2")
+system("LC_ALL=C sort #{output}.tmp3 > #{output}.tmp4")
+system("LC_ALL=C rm #{output}.tmp3")
+
+open("#{output}.tmp4","r:ASCII-8BIT"){|fp|
+	open("#{output}.tmp5","w:ASCII-8BIT"){|fpout|
+		ngram_prev = []
+		value_prev = nil
+		while fp.gets
+			ngram, value = $_.chomp.split("\t")
+			ngram = ngram.split
+			#$stderr.puts ngram_prev.inspect, value_prev.inspect
+
+			if ngram_prev.size > 2 and ngram_prev[-2]=="<#>" and ngram_prev[-1]=="\x01<#>"
+				if ngram_prev.size == ngram.size and ngram_prev[0...-1]==ngram[0...-1]
+					fpout.puts "#{ngram_prev[1...-1].join(" ")} \x01 #{ngram_prev[0]}\t#{value_prev}"
+				else
+					fpout.puts "#{ngram_prev[1...-1].join(" ")} \x01 #{ngram_prev[0]}\t#{-value_prev.to_f}"
+				end
+				ngramnums[ngram_prev.size-2]+=1
+			elsif ngram_prev.size > 1 and ngram_prev[-2]=="<#>" and value_prev.nil?
+				#remove
+			elsif ngram_prev.size > 0
+				ngram_back = ngram_prev[-1]
+				ngram_prev[-1]="\x01 #{ngram_back}"
+				fpout.puts "#{ngram_prev.join(" ")}\t#{value_prev}"
+				ngramnums[ngram_prev.size-1]+=1
+			end
+
+			ngram_prev = ngram
+			value_prev = value
+		end
+
+		if ngram_prev.size > 2 and ngram_prev[-2]=="<#>" and ngram_prev[-1]=="\x01<#>"
+			fpout.puts "#{ngram_prev[1...-1].join(" ")} \x01 #{ngram_prev[0]}\t#{-value_prev.to_f}"
+			ngramnums[ngram_prev.size-2]+=1
+		elsif ngram_prev.size > 1 and ngram_prev[-2]=="<#>" and value_prev.nil?
+			#remove
+		elsif ngram_prev.size > 0
+			ngram_back = ngram_prev[-1]
+			ngram_prev[-1]="\x01 #{ngram_back}"
+			fpout.puts "#{ngram_prev.join(" ")}\t#{value_prev}"
+			ngramnums[ngram_prev.size-1]+=1
+		end
+	}
+}
+
+system("LC_ALL=C rm #{output}.tmp4")
 open(output, "w:ASCII-8BIT"){|fp|
 	fp.puts "\\data\\"
 	ngramnums.each_index{|i|
@@ -105,8 +164,8 @@ open(output, "w:ASCII-8BIT"){|fp|
 	fp.puts "\\n-grams:"
 }
 
-system("LC_ALL=C sort #{output}.tmp3 | sed -e 's/\x01 //g' >> #{output}")
-system("LC_ALL=C rm #{output}.tmp3")
+system("LC_ALL=C sort #{output}.tmp5 | sed -e 's/\x01 //g' >> #{output}")
+system("LC_ALL=C rm #{output}.tmp5")
 
 open(output,"a:ASCII-8BIT"){|fp|
 	fp.puts ""
