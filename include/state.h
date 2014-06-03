@@ -27,6 +27,27 @@ namespace DALM{
 				memcpy(bows, s.bows, sizeof(float)*order);
 			}
 			
+      State &operator=(const State &s){
+        if(order != s.order){
+          order = s.order;
+          delete [] sids;
+          delete [] vids;
+          delete [] bows;
+
+          sids = new StateId[order];
+          vids = new VocabId[order];
+          bows = new float[order];
+        }
+        count = s.count;
+        head = s.head;
+        daid = s.daid;
+        head_pos = s.head_pos;
+        memcpy(sids, s.sids, sizeof(StateId)*order);
+        memcpy(vids, s.vids, sizeof(VocabId)*order);
+        memcpy(bows, s.bows, sizeof(float)*order);
+        return *this;
+      }
+
 			virtual ~State(){
 				delete [] sids;
 				delete [] vids;
