@@ -45,9 +45,11 @@ namespace DALM{
 			}
 
 			inline void push_word(VocabId word){
-				unsigned char end = (count==DALM_MAX_ORDER)?count-1:count;
-				for(unsigned char i=end; i>=1; i--){
-					vids[i] = vids[i-1];
+				if(count>0){
+					unsigned char end = count-1;
+					for(unsigned char i=end; i>=1; i--){
+						vids[i] = vids[i-1];
+					}
 				}
 				vids[0] = word;
 			}

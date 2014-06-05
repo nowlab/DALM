@@ -223,6 +223,7 @@ float EmbeddedDA::get_prob(VocabId word, State &state){
 	if(prob_pos < unigram_da->array_size 
 			&& unigram_da->da_array[prob_pos].check.check_val == terminal){
 		prob=unigram_da->da_array[prob_pos].base.logprob;
+		state.set_bow(0, 0.0);
 		if(prob<0){
 		 	state.set_count(1);
 		}else{
@@ -232,7 +233,7 @@ float EmbeddedDA::get_prob(VocabId word, State &state){
 
 	for(unsigned int i = 0; i < count; i++){
 		next = da_array[pos].base.base_val+state.get_word(i);
-		state.set_bow(i, 0.0);
+		if(i+1 < context_size) state.set_bow(i+1, 0.0);
 		if(next < array_size && da_array[next].check.check_val == pos){
 			pos = next;
 
@@ -278,6 +279,7 @@ float EmbeddedDA::get_prob(VocabId word, State &state, Fragment &fnew){
 	if(prob_pos < unigram_da->array_size 
 			&& unigram_da->da_array[prob_pos].check.check_val == terminal){
 		prob=unigram_da->da_array[prob_pos].base.logprob;
+		state.set_bow(0, 0.0);
 		if(prob<0){
 		 	state.set_count(1);
 		}else{
@@ -286,7 +288,7 @@ float EmbeddedDA::get_prob(VocabId word, State &state, Fragment &fnew){
 	}
 	for(unsigned int i = 0; i < count; i++){
 		next = da_array[pos].base.base_val+state.get_word(i);
-		state.set_bow(i, 0.0);
+		if(i+1 < context_size) state.set_bow(i+1, 0.0);
 		if(next < array_size && da_array[next].check.check_val == pos){
 			pos = next;
 			fnew.status.pos=pos;
@@ -321,13 +323,14 @@ float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap){
 	unsigned char count = state.get_count();
 	bool &finalized = gap.is_finalized();
 	bool &extended = gap.is_extended();
-	state.set_count(depth);
 
 	if(count <= g){
-		finalized=true;
-		extended=false;
-		return 0.0;
+		throw "BUG";
+		//finalized=true;
+		//extended=false;
+		//return 0.0;
 	}
+	state.set_count(depth);
 	extended=false;
 	finalized=false;
 
@@ -361,7 +364,7 @@ float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap){
  
 	for(; depth < count; depth++){
 		next = da_array[pos].base.base_val+state.get_word(depth);
-		state.set_bow(depth, 0.0);
+		if(depth+1 < context_size) state.set_bow(depth+1, 0.0);
 		if(next < array_size && da_array[next].check.check_val == pos){
 			extended=true;
 			pos = next;
@@ -399,9 +402,10 @@ float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap, Fragme
 	fnew = fprev;
 
 	if(count <= g){
-		finalized=true;
-		extended=false;
-		return 0.0;
+		throw "BUG";
+		//finalized=true;
+		//extended=false;
+		//return 0.0;
 	}
 	extended=false;
 	finalized=false;
@@ -437,7 +441,7 @@ float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap, Fragme
 
 	for(; depth < count; depth++){
 		next = da_array[pos].base.base_val+state.get_word(depth);
-		state.set_bow(depth, 0.0);
+		if(depth+1 < context_size) state.set_bow(depth+1, 0.0);
 		if(next < array_size && da_array[next].check.check_val == pos){
 			extended=true;
 			pos = next;
