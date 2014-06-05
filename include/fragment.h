@@ -20,7 +20,6 @@ namespace DALM {
 		public:
 			Gap(State &s){
 				gap = 0;
-				count = s.get_count();
 			}
 			virtual ~Gap(){}
 	
@@ -31,12 +30,9 @@ namespace DALM {
 
 			inline bool &is_finalized(){ return finalized; }
 			inline bool &is_extended(){ return extended; }
-			inline unsigned char get_count() const { return count; }
-			inline void set_count(unsigned char c){ count=c; }
 
 		private:
 			unsigned char gap;
-			unsigned char count;
 			bool finalized;
 			bool extended;
 	};

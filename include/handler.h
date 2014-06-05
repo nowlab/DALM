@@ -160,7 +160,7 @@ namespace DALM{
 			}
 			
 			virtual size_t get_daid(const Fragment &f, State &state_prev, Gap &g){
-				if(g.get_count()==0){
+				if(state_prev.get_count()==0){
 					throw "BUG!";
 				}else{
 					return state_prev.get_word(0)%danum;

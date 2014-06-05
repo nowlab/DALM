@@ -318,10 +318,10 @@ float EmbeddedDA::get_prob(VocabId word, State &state, Fragment &fnew){
 float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap){
 	size_t g = gap.get_gap();
 	unsigned char depth = g;
-	unsigned char count = gap.get_count();
+	unsigned char count = state.get_count();
 	bool &finalized = gap.is_finalized();
 	bool &extended = gap.is_extended();
-	gap.set_count(depth);
+	state.set_count(depth);
 
 	if(count <= g){
 		finalized=true;
@@ -372,7 +372,7 @@ float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap){
 				prob = da_array[prob_pos].base.logprob;
 				bow = 0.0;
 				if(prob < 0){
-					gap.set_count(std::min<unsigned char>(depth+2,context_size));
+					state.set_count(std::min<unsigned char>(depth+2,context_size));
 				}else{
 					prob=-prob;
 				}
@@ -392,10 +392,10 @@ float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap){
 float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap, Fragment &fnew){
 	size_t g = gap.get_gap();
 	unsigned char depth = g;
-	unsigned char count = gap.get_count();
+	unsigned char count = state.get_count();
 	bool &finalized = gap.is_finalized();
 	bool &extended = gap.is_extended();
-	gap.set_count(depth);
+	state.set_count(depth);
 	fnew = fprev;
 
 	if(count <= g){
@@ -449,7 +449,7 @@ float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap, Fragme
 				prob = da_array[prob_pos].base.logprob;
 				bow = 0.0;
 				if(prob < 0){
-					gap.set_count(std::min<unsigned char>(depth+2,context_size));
+					state.set_count(std::min<unsigned char>(depth+2,context_size));
 				}else{
 					prob = -prob;
 				}
@@ -476,22 +476,6 @@ void EmbeddedDA::init_state(VocabId *word, unsigned char order, State &state){
 }
 
 void EmbeddedDA::init_state(State &state, const State &state_prev, const Fragment *fragments, const Gap &gap){
-	/*
-	unsigned char scount = state.get_count();
-	unsigned char depth = gap.get_gap();
-	unsigned char max_depth = std::min(
-			(int)scount+depth,
-			(int)context_size
-	);
-	unsigned char move_end = max_depth-depth;
-	state.shift_words(0, move_end, depth);
-
-	for(unsigned char i = state_prev.get_count(); i < gap.get_gap(); i++){
-		state.set_word(i, fragments[gap.get_gap()-i-1].status.word);
-	}
-	*/
-
-	state.set_count(gap.get_count());
 }
 
 /* depricated */
