@@ -10,7 +10,7 @@ all: builder dumper libdalm
 	cp dalm_builder bin
 	cp trie_dumper bin
 
-DALM_OBJ = src/lm.o src/logger.o src/vocabulary.o src/embedded_da.o src/value_array.o
+DALM_OBJ = src/lm.o src/logger.o src/vocabulary.o src/embedded_da.o src/value_array.o src/fragment.o
 
 builder: $(DALM_OBJ) src/builder.o
 	$(CXX) $(CPPFLAGS) -o dalm_builder $^ $(LIBS)
