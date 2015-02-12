@@ -6,6 +6,7 @@
 #include<cstring>
 
 #include<fstream>
+#include<stdexcept>
 #include<vector>
 
 #include "logger.h"
@@ -90,11 +91,10 @@ namespace DALM {
 				std::vector<size_t> ngramnums;
 				std::string line;
 
-				std::getline(arpastream, line); // skip blank line.
-				std::getline(arpastream, line); // skip \data\ line.
+				while (std::getline(arpastream, line) && line.empty()) {} // skip blank line.
 				if(line != "\\data\\"){
 					logger << "ARPA file format error. abort." << Logger::endc;
-					throw "error.";
+					throw std::runtime_error("error.");
 				}
 
 				std::getline(arpastream, line);
