@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 if [ $# -ne 3 ]; then
 	echo "Usage: $0 arpa-file division-number output-dir"
 	exit 1
