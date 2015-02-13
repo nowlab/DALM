@@ -13,6 +13,15 @@ To build DALM, use waf build system.
 Run the command:
 > ./waf configure build install --prefix=[install dir]
 
+
+### (Experimental) CMake build
+To build DALM by CMake:
+  mkdir build
+  cd build
+  cmake .. -DCMAKE_INSTALL_PREFIX=[install dir]
+  make
+  make install
+
 ## Usage
 ### Building a DALM model
 To build a DALM model, run:
