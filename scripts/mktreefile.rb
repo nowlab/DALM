@@ -51,7 +51,7 @@ tmpfp.close
 
 def puts_inserted(fpout, inserted)
 	if inserted[-1]=="<#>"
-		fput.puts "#{inserted.join(" ")}\t0.0"
+        throw "Irregular ARPA file. Please check your cutoff parameter. B( #{inserted[0...-1].join(" ")} ) is not found, although ARPA has P( * | #{inserted[0...-1].join(" ")} )."
 	else
 		fpout.puts "#{inserted.join(" ")}\t"
 	end
