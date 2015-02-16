@@ -111,7 +111,7 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 				det_base(words, values, wordssize, now);
 			}else{
 				det_base(words, NULL, wordssize, now);
-				if(terminal_pos!=(size_t)-1){
+				if(historysize!=0 && terminal_pos!=(size_t)-1){
 					unsigned terminal=get_terminal(now);
 					value_id[terminal] = value_array_index->lookup(values[terminal_pos]);
 				}
@@ -141,7 +141,7 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 		det_base(words, values, wordssize, now);
 	}else{
 		det_base(words, NULL, wordssize, now);
-		if(terminal_pos!=(size_t)-1){
+		if(historysize!=0 && terminal_pos!=(size_t)-1){
 			unsigned terminal=get_terminal(now);
 			value_id[terminal] = value_array_index->lookup(values[terminal_pos]);
 		}
