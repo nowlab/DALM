@@ -110,7 +110,7 @@ namespace DALM{
 			}
 			
 			DA **da;
-			size_t danum;
+			unsigned char danum;
 	};
 
 	class EmbeddedDAHandler : public DAHandler{
@@ -134,8 +134,8 @@ namespace DALM{
 				value_array = new ValueArray(pathtoarpa, vocab, logger);
 				ValueArrayIndex value_array_index(*value_array);
 
-  			da = new DA*[danum];
-			  DABuilder **builder = new DABuilder*[danum];
+  				da = new DA*[danum];
+				DABuilder **builder = new DABuilder*[danum];
 
 				for(size_t i = 0; i < danum; i++){
 					da[i] = new EmbeddedDA(i, danum, *value_array, (EmbeddedDA **)da, logger);
