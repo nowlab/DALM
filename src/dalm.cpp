@@ -9,6 +9,7 @@
 #include "version.h"
 #include "pthread_wrapper.h"
 #include "handler.h"
+#include "vocabulary_file.h"
 
 using namespace DALM;
 
@@ -138,3 +139,32 @@ void LM::readParams(FileReader &reader, unsigned char order){
 	}
 }
 
+Model::Model(std::string basedir, unsigned char order, Logger &logger): order(order){
+	std::string ini_path = basedir + "/dalm.ini";
+
+	std::ifstream ifs(ini_path.c_str());
+	std::string line;
+
+	std::getline(ifs, line);
+	while(!ifs.eof()){
+		unsigned int pos = line.find("=");
+		std::string key = line.substr(0, pos);
+		std::string value = line.substr(pos+1, line.size()-pos);
+		if(key=="MODEL"){
+			model = value;
+		}else if(key=="WORDS"){
+			words = value;
+		}else if(key=="WORDSTXT"){
+			wordstxt = value;
+		}
+		std::getline(ifs, line);
+	}
+
+	model = basedir + "/" + model;
+	words = basedir + "/" + words;
+	wordstxt = basedir + "/" + wordstxt;
+
+	vocab = new Vocabulary(words, logger);
+	lm = new LM(model, *vocab, order, logger);
+	vocab_file = new VocabularyFile(wordstxt);
+}

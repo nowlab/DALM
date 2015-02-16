@@ -23,16 +23,18 @@ set(HEADERS
     include/value_array_index.h
     include/version.h
     include/vocabulary.h
+    include/vocabulary_file.h
     )
 
 set(SOURCE_FILES
     ${HEADERS}
     src/embedded_da.cpp
     src/fragment.cpp
-    src/lm.cpp
+    src/dalm.cpp
     src/logger.cpp
     src/value_array.cpp
     src/vocabulary.cpp
+    src/vocabulary_file.cpp
     darts-clone/darts.h
     )
 

@@ -14,6 +14,7 @@
 #include "state.h"
 #include "fragment.h"
 #include "fileutil.h"
+#include "vocabulary_file.h"
 
 typedef unsigned long int StateId;
 
@@ -59,6 +60,22 @@ namespace DALM {
 			DAHandler *handler;
 			Logger &logger;
 			VocabId stagid;
+	};
+	class Model {
+	public:
+	    Model(std::string basedir, unsigned char order, Logger &logger);
+	    virtual ~Model(){
+	        delete lm;
+	        delete vocab;
+	        delete vocab_file;
+	    }
+        std::string model;
+	    std::string words;
+	    std::string wordstxt;
+	    Vocabulary *vocab;
+	    LM *lm;
+	    VocabularyFile *vocab_file;
+	    unsigned char order;
 	};
 }
 

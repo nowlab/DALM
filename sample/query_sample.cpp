@@ -20,54 +20,38 @@ void push(DALM::VocabId *ngram, size_t n, DALM::VocabId wid){
 	ngram[0] = wid;
 }
 
-void read_ini(const char *inifile, string &model, string &words, string &wordstxt){
-	ifstream ifs(inifile);
-	string line;
-
-	getline(ifs, line);
-	while(ifs){
-		unsigned int pos = line.find("=");
-		string key = line.substr(0, pos);
-		string value = line.substr(pos+1, line.size()-pos);
-		if(key=="MODEL"){
-			model = value;
-		}else if(key=="WORDS"){
-			words = value;
-		}else if(key=="WORDSTXT"){
-			wordstxt = value;
-		}
-		getline(ifs, line);
-	}
-}
-
 int main(int argc, char **argv){
 	if(argc != 3){
-		cerr << "Usage : " << argv[0] << " order dalm-ini-file" << endl;
+		cerr << "Usage : " << argv[0] << " order dalm-dir" << endl;
 		return 1;
 	}
 	
 	unsigned char order = atoi(argv[1]);
-  string path = argv[2];
-  string inifile= path + "/dalm.ini";
+    string path = argv[2];
 
-	/////////////////////
-	// READING INIFILE //
-	/////////////////////
-	string model; // Path to the double-array file.
-	string words; // Path to the vocabulary file.
-	string wordstxt; // Path to the vocabulary file in text format.
-	read_ini(inifile.c_str(), model, words, wordstxt);
+    ////////////////
+    // LOADING LM //
+    ////////////////
 
-	model = path + "/" + model;
-	words = path + "/" + words;
-	wordstxt = path + "/" + wordstxt;
+    // Preparing a logger object.
+    DALM::Logger logger(stderr);
+    logger.setLevel(DALM::LOGGER_INFO);
 
-	////////////////
-	// WORD LIST  //
-	////////////////
-	ifstream ifs(wordstxt.c_str());
-	string word;
-	size_t word_count = 0;
+    // Load ini file.
+    DALM::Model ini_file(path, order, logger);
+
+    // Load the vocabulary file.
+    DALM::Vocabulary &vocab = *ini_file.vocab;
+
+    // Load the language model.
+    DALM::LM &lm = *ini_file.lm;
+
+    ////////////////
+    // WORD LIST  //
+    ////////////////
+    ifstream ifs(ini_file.wordstxt.c_str());
+    string word;
+    size_t word_count = 0;
 
 	// a wordstxt file contains a word per line.
 	getline(ifs, word);
@@ -77,20 +61,7 @@ int main(int argc, char **argv){
 	}
 	cerr << "WORD COUNT=" << word_count << endl;
 
-	////////////////
-	// LOADING LM //
-	////////////////
 
-	// Preparing a logger object.
-	DALM::Logger logger(stderr);
-	logger.setLevel(DALM::LOGGER_INFO);
-
-	// Load the vocabulary file.
-	DALM::Vocabulary vocab(words, logger);
-
-	// Load the language model.
-	DALM::LM lm(model, vocab, order, logger);
-	
 	//////////////
 	// QUERYING //
 	//////////////

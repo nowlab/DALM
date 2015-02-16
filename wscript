@@ -31,7 +31,7 @@ def build(bld):
 	use = [projname]
 
 	###### INSTALL HEADERS ######
-	headers = ['arpafile.h', 'da.h', 'dalm.h', 'fragment.h', 'handler.h', 'logger.h', 'pthread_wrapper.h', 'state.h', 'treefile.h', 'value_array.h', 'value_array_index.h', 'vocabulary.h', 'version.h']
+	headers = ['arpafile.h', 'da.h', 'dalm.h', 'fragment.h', 'handler.h', 'logger.h', 'pthread_wrapper.h', 'state.h', 'treefile.h', 'value_array.h', 'value_array_index.h', 'vocabulary.h', 'vocabulary_file.h', 'version.h']
 	headers = map(lambda x:'include/%s'%x, headers)
 	bld.install_files('${PREFIX}/include', headers)
 
@@ -40,7 +40,7 @@ def build(bld):
 	bld.install_files('${PREFIX}/darts-clone', headers)
 
 	###### BUILD DALM LIB ######
-	files = ['embedded_da.cpp', 'lm.cpp', 'fragment.cpp', 'logger.cpp', 'vocabulary.cpp', 'value_array.cpp']
+	files = ['embedded_da.cpp', 'dalm.cpp', 'fragment.cpp', 'logger.cpp', 'vocabulary.cpp', 'value_array.cpp', 'vocabulary_file.cpp']
 	files = map(lambda x: 'src/%s'%x, files)
 	
 	lib = bld.stlib(source=' '.join(files), target=projname)

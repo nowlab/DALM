@@ -1,1 +1,1 @@
-g++  -I ../include -I ../darts-clone/ -L ../lib -l dalm -l MurmurHash3  query_sample.cpp 
+g++  -I ../include -I ../darts-clone/ -L ../lib query_sample.cpp -l dalm -pthread -o query_sample
