@@ -27,7 +27,6 @@ set(HEADERS
 
 set(SOURCE_FILES
     ${HEADERS}
-    src/dumper.cpp
     src/embedded_da.cpp
     src/fragment.cpp
     src/lm.cpp
@@ -66,16 +65,8 @@ target_link_libraries(
     SegFault
 )
 
-add_executable(trie_dumper src/dumper.cpp)
-target_link_libraries(
-    trie_dumper
-    dalm
-    pthread
-    SegFault
-)
-
 INSTALL(TARGETS dalm ARCHIVE DESTINATION lib)
 INSTALL(FILES ${HEADERS} DESTINATION include)
 INSTALL(FILES darts-clone/darts.h DESTINATION darts-clone)
 INSTALL(DIRECTORY scripts DESTINATION . USE_SOURCE_PERMISSIONS)
-INSTALL(TARGETS query_sample query_with_state_sample dalm_builder trie_dumper RUNTIME DESTINATION bin)
+INSTALL(TARGETS query_sample query_with_state_sample dalm_builder RUNTIME DESTINATION bin)

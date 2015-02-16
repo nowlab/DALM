@@ -7,6 +7,7 @@
 #include "arpafile.h"
 #include "logger.h"
 #include "state.h"
+#include "fileutil.h"
 
 namespace DALM{
 	class DAHandler{
@@ -115,12 +116,12 @@ namespace DALM{
 	class EmbeddedDAHandler : public DAHandler{
 		public:
 			EmbeddedDAHandler(): value_array(NULL){}
-			EmbeddedDAHandler(FILE *fp, unsigned char order, Logger &logger){
-				fread(&danum, sizeof(unsigned char), 1, fp);
+			EmbeddedDAHandler(FileReader &reader, unsigned char order, Logger &logger){
+				reader >> danum;
 				da = new DA*[danum];
-				value_array = new ValueArray(fp, logger);
+				value_array = new ValueArray(reader, logger);
 				for(size_t i = 0; i < danum; i++){
-					da[i] = new EmbeddedDA(fp, *value_array, (EmbeddedDA **) da, order, logger);
+					da[i] = new EmbeddedDA(reader, *value_array, (EmbeddedDA **) da, order, logger);
 				}
 			}
 			virtual ~EmbeddedDAHandler(){

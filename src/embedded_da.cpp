@@ -4,6 +4,7 @@
 #include <limits.h>
 
 #include <utility>
+#include <fileutil.h>
 
 #include "treefile.h"
 #include "da.h"
@@ -37,18 +38,17 @@ EmbeddedDA::EmbeddedDA(
 	}  
 }
 
-EmbeddedDA::EmbeddedDA(FILE *fp, ValueArray &value_array, EmbeddedDA **neighbours, unsigned char order, Logger &logger)
+EmbeddedDA::EmbeddedDA(FileReader &reader, ValueArray &value_array, EmbeddedDA **neighbours, unsigned char order, Logger &logger)
 	: value_array(value_array), logger(logger){
 	DA::context_size = order-1;
-	fread(&daid,sizeof(unsigned char),1,fp);
-	fread(&datotal,sizeof(unsigned char),1,fp);
+	reader >> daid;
+	reader >> datotal;
 	da = neighbours;
-	fread(&max_index,sizeof(unsigned),1,fp);
+	reader >> max_index;
 	array_size = max_index+1;
 
 	da_array = new DAPair[array_size];
-
-	fread(da_array, sizeof(DAPair), array_size, fp);
+	reader.read_many(da_array, array_size);
 
 	value_id = NULL;
 	first_empty_index=0;

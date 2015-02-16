@@ -30,15 +30,9 @@ LM::LM(std::string dumpfilepath,Vocabulary &vocab, unsigned char order, Logger &
 	logger << "[LM::LM] BINMODE begin." << Logger::endi;
 	logger << "[LM::LM] dumpfilepath=" << dumpfilepath << Logger::endi;
 
-	FILE *fp = fopen(dumpfilepath.c_str(), "rb");
-	if(fp != NULL){
-		v = Version(fp, logger); // Version check.
-		readParams(fp, order);
-		fclose(fp);
-	} else {
-		logger << "[LM::LM] Dump file may have IO error." << Logger::endc;
-		throw "error.";
-	}
+	FileReader reader(dumpfilepath);
+	v = Version(reader, logger); // Version check.
+	readParams(reader, order);
 	std::string stagstart = "<s>";
 	stagid = vocab.lookup(stagstart.c_str());
 	logger << "[LM::LM] end." << Logger::endi;
@@ -135,9 +129,9 @@ void LM::dumpParams(FILE *fp){
 	handler->dump(fp);
 }
 
-void LM::readParams(FILE *fp, unsigned char order){
+void LM::readParams(FileReader &reader, unsigned char order){
 	if(v.get_opt()==DALM_OPT_EMBEDDING){
-		handler = new EmbeddedDAHandler(fp, order, logger);
+		handler = new EmbeddedDAHandler(reader, order, logger);
 	}else{
 		logger << "[LM::build] DALM unknown type." << Logger::endc;
 		throw "type error";

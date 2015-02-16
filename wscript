@@ -47,14 +47,6 @@ def build(bld):
 	lib.includes = ['include']
 	bld.install_files('${PREFIX}/lib/', ['lib%s.a'%projname])
 
-	###### BUILD DUMPER ######
-	files = ['dumper.cpp']
-	files = map(lambda x: 'src/%s'%x, files)
-	
-	dumper = bld.program(source=' '.join(files), target='trie_dumper')
-	dumper.use = use
-	dumper.includes = includes
-
 	###### BUILD DALM BUILDER ######
 	files = ['builder.cpp']
 	files = map(lambda x: 'src/%s'%x, files)

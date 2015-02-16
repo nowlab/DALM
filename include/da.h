@@ -16,6 +16,7 @@
 #include "value_array_index.h"
 #include "fragment.h"
 #include "logger.h"
+#include "fileutil.h"
 
 #define DALM_OOV_PROB -100.0
 
@@ -70,7 +71,7 @@ namespace DALM{
 	class EmbeddedDA : public DA{
 		public:
 			EmbeddedDA(unsigned char daid, unsigned char datotal, ValueArray &value_array, EmbeddedDA **neighbours, Logger &logger);
-			EmbeddedDA(FILE *fp, ValueArray &value_array, EmbeddedDA **neighbours, unsigned char order, Logger &logger);
+			EmbeddedDA(FileReader &reader, ValueArray &value_array, EmbeddedDA **neighbours, unsigned char order, Logger &logger);
 			virtual ~EmbeddedDA();
 
 			virtual void make_da(std::string &pathtotreefile, ValueArrayIndex *value_array_index, Vocabulary &vocab);

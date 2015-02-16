@@ -13,6 +13,7 @@
 #include "version.h"
 #include "state.h"
 #include "fragment.h"
+#include "fileutil.h"
 
 typedef unsigned long int StateId;
 
@@ -50,7 +51,7 @@ namespace DALM {
 			void errorcheck(std::string &pathtoarpa);
 			void build(std::string &pathtoarpa, std::string &pathtotreefile, size_t dividenum);
 			void dumpParams(FILE *fp);
-			void readParams(FILE *fp, unsigned char order);
+			void readParams(FileReader &reader, unsigned char order);
 
 			DA **da;
 			Vocabulary &vocab;

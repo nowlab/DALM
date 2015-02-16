@@ -11,174 +11,123 @@
 
 #include "logger.h"
 #include "vocabulary.h"
+#include "fileutil.h"
 
 namespace DALM {
 	class ARPAFile {
-		public:
-			ARPAFile (std::string dumpfile, Vocabulary &vocab) : vocab(vocab){
-				fp = std::fopen(dumpfile.c_str(), "rb");
-
-				std::fread(&ngramorder, sizeof(size_t), 1, fp);
-				std::fread(&total, sizeof(size_t), 1, fp);
-
-				for(size_t i = 0; i < ngramorder; i++){
-					size_t num;
-					std::fread(&num, sizeof(size_t), 1, fp);
-					ngramnums.push_back(num);
-				}
+	public:
+		ARPAFile(std::string arpafile, Vocabulary &vocab) : vocab_(vocab), file_(arpafile.c_str()), processing_order_(0), index_(0){
+			if(!file_){
+				throw std::runtime_error("error");
 			}
 
-			~ARPAFile(){
-				fclose(fp);
+			read_header();
+		}
+
+		virtual ~ARPAFile(){
+			file_.close();
+		}
+
+		size_t get_ngramorder(){
+			return ngramorder_;
+		}
+
+		size_t get_totalsize(){
+			return total_;
+		}
+
+		size_t num_by_order(size_t order){
+			return ngramnums_[order-1];
+		}
+
+		bool get_ngram(unsigned short &order, VocabId *&ngram, float &prob, float &bow){
+			std::string line;
+			std::getline(file_, line);
+			if(file_.eof()){
+				throw std::runtime_error("eof");
 			}
 
-			size_t get_ngramorder(){
-				return ngramorder;
+			bool bow_presence = true;
+			std::istringstream iss(line);
+			iss >> prob;
+
+			order = (unsigned short)processing_order_;
+			ngram = new VocabId[order];
+			for(size_t i = 0; i < processing_order_; i++){
+				std::string word;
+				iss >> word;
+				ngram[i] = vocab_.lookup(word.c_str());
 			}
 
-			size_t get_totalsize(){
-				return total;
+			if(iss.eof()){
+				bow = 0.0;
+				bow_presence = false;
+			}else{
+				iss >> bow;
 			}
 
-			size_t num_by_order(size_t order){
-				return ngramnums[order-1];
-			}
+			++index_;
+			if(index_ >= ngramnums_[processing_order_ - 1]){
+				while (std::getline(file_, line) && line.empty()) {} // skip blank line.
 
-			bool get_ngram(unsigned short &order, VocabId *&ngram, float &prob, float &bow){
-				std::fread(&order, sizeof(unsigned short), 1, fp);
-				ngram = new VocabId[order];
-
-				for(size_t i = 0; i < order; i++){
-					unsigned short wsize;
-					std::fread(&wsize, sizeof(unsigned short), 1, fp);
-
-					char *word = new char[wsize+1];
-					std::fread(word, sizeof(char), wsize, fp);
-					word[wsize] = '\0';
-					ngram[i] = vocab.lookup(word);
-					delete [] word;
-				}
-				bool bow_presence=false;
-				std::fread(&bow_presence,sizeof(bool),1,fp);
-				std::fread(&prob, sizeof(float), 1, fp);
-				std::fread(&bow, sizeof(float), 1, fp);
-				return bow_presence;
-			}
-
-			static void dump(std::string arpaFile, std::string dumpFile, Logger &logger){
-				logger << "[ARPAFile::dump] arpaFile=" << arpaFile << Logger::endi;
-				logger << "[ARPAFile::dump] dumpFile=" << dumpFile << Logger::endi;
-
-				std::ifstream arpastream(arpaFile.c_str());
-				FILE *outfp = std::fopen(dumpFile.c_str(), "wb");
-
-				if(!arpastream){
-					logger << "[ARPAFile::dump] ARPA File(filepath=" << arpaFile << ") have IO error." << Logger::endc;
-					throw "error";
-				}
-
-				size_t total = dump_header(arpastream, outfp, logger);
-				dump_ngrams(arpastream, outfp, total, logger);
-
-				std::fclose(outfp);
-			}
-
-		private:
-
-			static size_t dump_header(std::ifstream &arpastream, FILE *outfp, Logger &logger){
-				size_t ngramorder=0;
-				size_t total=0;
-				std::vector<size_t> ngramnums;
-				std::string line;
-
-				while (std::getline(arpastream, line) && line.empty()) {} // skip blank line.
-				if(line != "\\data\\"){
-					logger << "ARPA file format error. abort." << Logger::endc;
-					throw std::runtime_error("error.");
-				}
-
-				std::getline(arpastream, line);
-				while(!arpastream.eof()){
-					size_t num = atoi(line.substr(8).c_str());
-					ngramnums.push_back(num);
-					ngramorder++;
-					total+=num;
-
-					std::getline(arpastream, line);
-					if(line == "") break;
-				}
-
-				std::fwrite(&ngramorder, sizeof(size_t), 1, outfp);
-				std::fwrite(&total, sizeof(size_t), 1, outfp);
-				std::fwrite(&(ngramnums[0]), sizeof(size_t), ngramnums.size(), outfp);
-
-				logger << "[ARPAFile::dump_header] ngramorder=" << ngramorder << Logger::endi;
-				logger << "[ARPAFile::dump_header] total=" << total << Logger::endi;
-				for(size_t i = 0; i < ngramnums.size(); i++){
-					logger << "[ARPAFile::dump_header] order[" << i+1 << "]=" << ngramnums[i] << Logger::endi;
-				}
-
-				return total;
-			}
-
-			static void dump_ngrams(std::ifstream &arpastream, FILE *outfp, size_t total, Logger &logger){
-				size_t count = 0;
-				size_t ten_percent = total/10;
-				std::string line;
-				std::getline(arpastream, line);
-				while(!arpastream.eof()){
-					unsigned short n = (unsigned short) atoi(line.substr(1,1).c_str()); // \n-gram
-
-					std::getline(arpastream, line);
-					while(!arpastream.eof()){
-						dump_ngram(outfp, line, n, logger);
-						count++;
-
-						if(ten_percent!=0 && count % ten_percent == 0){
-							logger << count / ten_percent << "0% Done." << Logger::endi;
-						}
-
-						getline(arpastream, line);
-						if(line == "") break;
+				if(processing_order_ == ngramorder_){
+					if(line != "\\end\\"){
+						throw "ARPA file format error. \\end\\ expected.";
 					}
-
-					std::getline(arpastream, line);
-					if(line=="\\end\\"){
-						break;
+				}else{
+					std::ostringstream oss;
+					oss << "\\";
+					oss << processing_order_+1;
+					oss << "-grams:";
+					std::string expected = oss.str();
+					if(line != expected){
+						throw std::runtime_error("ARPA file format error. " + expected + " expected.");
 					}
 				}
+
+				index_ = 0;
+				++processing_order_;
 			}
 
-			// [order/2bytes] {[charbytes/2bytes] [words/(charbytes)bytes]}* [prob/4bytes] [bow/4bytes]
-			static void dump_ngram(FILE *outfp, std::string &line, unsigned short n, Logger &logger){
-				std::fwrite(&n, sizeof(unsigned short), 1, outfp);
-				float prob = 0.0;
-				float bow = 0.0;
-				bool bow_presence = true;
-				std::istringstream iss(line);
-				iss >> prob;
+			return bow_presence;
+		}
 
-				for(size_t i = 0; i < n; i++){
-					std::string word;
-					iss >> word;
-					unsigned short wsize = word.size();
-					std::fwrite(&wsize, sizeof(unsigned short), 1, outfp);
-					std::fwrite(word.c_str(), sizeof(char), wsize, outfp);			
-				}
+	private:
+		void read_header(){
+			ngramorder_ =0;
+			total_ =0;
+			std::string line;
 
-				if(iss.eof()) bow_presence = false;
-				else iss >> bow;
-
-				std::fwrite(&bow_presence , sizeof(bool),1,outfp);
-				std::fwrite(&prob, sizeof(float), 1, outfp);
-				std::fwrite(&bow, sizeof(float), 1, outfp);
+			while (std::getline(file_, line) && line.empty()) {} // skip blank line.
+			if(line != "\\data\\"){
+				throw std::runtime_error("error.");
 			}
 
-			Vocabulary &vocab;
-			size_t ngramorder;
-			size_t total;
-			std::vector<size_t> ngramnums;
-			FILE *fp;
+			std::getline(file_, line);
+			while(!file_.eof()){
+				std::size_t num = (std::size_t)atoi(line.substr(8).c_str());
+				ngramnums_.push_back(num);
+				++ngramorder_;
+				total_ +=num;
+
+				std::getline(file_, line);
+				if(line == "") break;
+			}
+			while (std::getline(file_, line) && line.empty()) {} // skip blank line.
+			if(line != "\\1-grams:"){
+				throw std::runtime_error("ARPA file format error.");
+			}
+			processing_order_ = 1;
+			index_ = 0;
+		}
+
+		Vocabulary &vocab_;
+		size_t ngramorder_;
+		size_t total_;
+		std::vector<size_t> ngramnums_;
+		std::ifstream file_;
+		std::size_t processing_order_;
+		std::size_t index_;
 	};
 }
 

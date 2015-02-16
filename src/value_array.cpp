@@ -27,10 +27,10 @@ ValueArray::ValueArray(std::string &pathtoarpa, Vocabulary &vocab, Logger &logge
 	logger << "[ValueArray] value_array.size =" << size << Logger::endi;
 }
 
-ValueArray::ValueArray(std::FILE *fp, Logger &logger): logger(logger){
-	fread(&size, sizeof(size_t), 1, fp);
+ValueArray::ValueArray(FileReader &reader, Logger &logger): logger(logger){
+	reader >> size;
 	value_array = new float[size];
-	fread(value_array, sizeof(float), size, fp);
+	reader.read_many(value_array, size);
 }
 
 void ValueArray::dump(std::FILE *fp){

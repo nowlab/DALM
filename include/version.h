@@ -31,14 +31,14 @@ namespace DALM {
 				opt = optimize;
 			}
 
-			Version(FILE *fp, Logger &logger){
+			Version(FileReader &reader, Logger &logger){
 				unsigned int ftype;
 				unsigned int fversion;
 				unsigned int fopt=0;
 
-				fread(&ftype, sizeof(unsigned int), 1, fp);
-				fread(&fversion, sizeof(unsigned int), 1, fp);
-				
+				reader >> ftype;
+				reader >> fversion;
+
 				if(ftype!=DALM_FILE_TYPE){
 					logger << "[Version::Version] Unrecognized filetype." << Logger::ende;
 					throw "[Version::Version] Unrecognized filetype.";
@@ -47,7 +47,7 @@ namespace DALM {
 				if(fversion==DALM_FILE_VERSION){
 					type=ftype;
 					version=fversion;
-					fread(&fopt, sizeof(unsigned int), 1, fp);
+					reader >> fopt;
 					if(fopt!=DALM_OPT_EMBEDDING){
 						logger << "[Version::Version] Unrecognized optimization." << Logger::ende;
 						throw "[Version::Version] Unrecognized optimization.";

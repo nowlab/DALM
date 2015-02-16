@@ -7,12 +7,13 @@
 
 #include "vocabulary.h"
 #include "logger.h"
+#include "fileutil.h"
 
 namespace DALM{
 	class ValueArray{
 		public:
 			ValueArray(std::string &pathtoarpa, Vocabulary &vocab, Logger &logger);
-			ValueArray(std::FILE *fp, Logger &logger);
+			ValueArray(FileReader &reader, Logger &logger);
 			virtual ~ValueArray();
 
 			float operator[](size_t i);
