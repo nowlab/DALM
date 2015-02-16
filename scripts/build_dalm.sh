@@ -41,6 +41,7 @@ echo "MKWORDDICT : `date`"
 $MKWORDDICT $ARPA $WORDDICT $WORDIDS
 
 if [ "$OPTMETHOD" = "embedding" ]; then
+    echo "MKTREEFILE : `date`"
 	$MKTREEFILE $ARPA $TREE
 fi
 
@@ -56,6 +57,10 @@ echo "WORDS=$WORDBINFN" >> $INI
 echo "ARPA=`basename $ARPA`" >> $INI
 echo "WORDSTXT=$WORDDICTFN" >> $INI
 
+if [ "$OPTMETHOD" = "embedding" ]; then
+       echo "CLEANING A TREE FILE : `date`"
+       rm $TREE
+fi
 echo "CLEANING A WORDID FILE : `date`"
 rm $WORDIDS
 
