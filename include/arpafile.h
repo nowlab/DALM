@@ -16,7 +16,7 @@
 namespace DALM {
 	class ARPAFile {
 	public:
-		ARPAFile(std::string arpafile, Vocabulary &vocab) : vocab_(vocab), file_(arpafile.c_str()), processing_order_(0), index_(0){
+		ARPAFile(std::string arpafile, Vocabulary &vocab) : vocab_(vocab), file_(arpafile), processing_order_(0), index_(0){
 			read_header();
 		}
 
