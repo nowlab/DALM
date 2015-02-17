@@ -17,15 +17,7 @@ namespace DALM {
 	class ARPAFile {
 	public:
 		ARPAFile(std::string arpafile, Vocabulary &vocab) : vocab_(vocab), file_(arpafile.c_str()), processing_order_(0), index_(0){
-			if(!file_){
-				throw std::runtime_error("error");
-			}
-
 			read_header();
-		}
-
-		virtual ~ARPAFile(){
-			file_.close();
 		}
 
 		size_t get_ngramorder(){
@@ -41,34 +33,39 @@ namespace DALM {
 		}
 
 		bool get_ngram(unsigned short &order, VocabId *&ngram, float &prob, float &bow){
-			std::string line;
-			std::getline(file_, line);
-			if(file_.eof()){
-				throw std::runtime_error("eof");
-			}
+            std::string prob_str;
+            if(file_.read_token(prob_str, "\t") != '\t'){
+                throw std::runtime_error("eof after prob.");
+            }
 
-			bool bow_presence = true;
-			std::istringstream iss(line);
-			iss >> prob;
+            bool bow_presence = true;
+            prob = (float)std::atof(prob_str.c_str());
+            order = (unsigned short)processing_order_;
+            ngram = new VocabId[order];
+            std::string word;
+            char sep = '\0';
+            for(size_t i = 0; i < processing_order_; i++){
+                sep = file_.read_token(word, " \t\n");
+                ngram[i] = vocab_.lookup(word.c_str());
+            }
 
-			order = (unsigned short)processing_order_;
-			ngram = new VocabId[order];
-			for(size_t i = 0; i < processing_order_; i++){
-				std::string word;
-				iss >> word;
-				ngram[i] = vocab_.lookup(word.c_str());
-			}
-
-			if(iss.eof()){
-				bow = 0.0;
-				bow_presence = false;
-			}else{
-				iss >> bow;
-			}
+            if(sep == ' '){
+                throw std::runtime_error("ARPA file format error. # of words mismatch.");
+            }else if(sep == '\t'){
+                std::string bow_str;
+                sep = file_.read_token(bow_str, "\n");
+                if(sep != '\n'){
+                    throw std::runtime_error("eof after bow.");
+                }
+                bow = (float)std::atof(bow_str.c_str());
+            }else{
+                bow = 0.0;
+                bow_presence = false;
+            }
 
 			++index_;
 			if(index_ >= ngramnums_[processing_order_ - 1]){
-				while (std::getline(file_, line) && line.empty()) {} // skip blank line.
+                std::string line = skip_blank();
 
 				if(processing_order_ == ngramorder_){
 					if(line != "\\end\\"){
@@ -93,29 +90,41 @@ namespace DALM {
 		}
 
 	private:
+        std::string skip_blank() {
+            std::string line;
+            while(true){
+                file_.read_token(line, "\n");
+                if(!line.empty()) break;
+            }
+            return line;
+        }
+
 		void read_header(){
 			ngramorder_ =0;
 			total_ =0;
-			std::string line;
-
-			while (std::getline(file_, line) && line.empty()) {} // skip blank line.
+			std::string line = skip_blank();
 			if(line != "\\data\\"){
-				throw std::runtime_error("error.");
+				throw std::runtime_error("ARPA file format error. \\data\\ expected.");
 			}
 
-			std::getline(file_, line);
-			while(!file_.eof()){
-				std::size_t num = (std::size_t)atoi(line.substr(8).c_str());
-				ngramnums_.push_back(num);
-				++ngramorder_;
-				total_ +=num;
+            std::string token;
+            while(file_.read_token(token, "=\n") == '='){
+                std::string num_str;
+                if(file_.read_token(num_str, "\n") == '\n'){
+                    std::size_t num = (std::size_t)atoi(num_str.c_str());
+                    ngramnums_.push_back(num);
+                    ++ngramorder_;
+                    total_ +=num;
+                }
+            }
 
-				std::getline(file_, line);
-				if(line == "") break;
-			}
-			while (std::getline(file_, line) && line.empty()) {} // skip blank line.
+            if(token == ""){
+                line = skip_blank();
+            }else{
+                line = token;
+            }
 			if(line != "\\1-grams:"){
-				throw std::runtime_error("ARPA file format error.");
+				throw std::runtime_error("ARPA file format error. \\1-grams: expected.");
 			}
 			processing_order_ = 1;
 			index_ = 0;
@@ -125,7 +134,7 @@ namespace DALM {
 		size_t ngramorder_;
 		size_t total_;
 		std::vector<size_t> ngramnums_;
-		std::ifstream file_;
+		TextFileReader file_;
 		std::size_t processing_order_;
 		std::size_t index_;
 	};

@@ -52,7 +52,7 @@ namespace DALM {
 			void errorcheck(std::string &pathtoarpa);
 			void build(std::string &pathtoarpa, std::string &pathtotreefile, size_t dividenum);
 			void dumpParams(FILE *fp);
-			void readParams(FileReader &reader, unsigned char order);
+			void readParams(BinaryFileReader &reader, unsigned char order);
 
 			DA **da;
 			Vocabulary &vocab;

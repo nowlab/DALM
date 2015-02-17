@@ -20,14 +20,14 @@ class CmpFreq{
 ValueArray::ValueArray(std::string &pathtoarpa, Vocabulary &vocab, Logger &logger): logger(logger){
 	std::map< float, unsigned int > value_map;
 
-	logger << "[ValueArray] Couting values" << Logger::endi;
+	logger << "[ValueArray] Counting values" << Logger::endi;
 	count_values(pathtoarpa, vocab, value_map);	
 	logger << "[ValueArray] Build value_array." << Logger::endi;
 	set_value_array(value_map); // value_map is cleared.
 	logger << "[ValueArray] value_array.size =" << size << Logger::endi;
 }
 
-ValueArray::ValueArray(FileReader &reader, Logger &logger): logger(logger){
+ValueArray::ValueArray(BinaryFileReader &reader, Logger &logger): logger(logger){
 	reader >> size;
 	value_array = new float[size];
 	reader.read_many(value_array, size);

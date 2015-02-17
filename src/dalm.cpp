@@ -31,7 +31,7 @@ LM::LM(std::string dumpfilepath,Vocabulary &vocab, unsigned char order, Logger &
 	logger << "[LM::LM] BINMODE begin." << Logger::endi;
 	logger << "[LM::LM] dumpfilepath=" << dumpfilepath << Logger::endi;
 
-	FileReader reader(dumpfilepath);
+	BinaryFileReader reader(dumpfilepath);
 	v = Version(reader, logger); // Version check.
 	readParams(reader, order);
 	std::string stagstart = "<s>";
@@ -130,7 +130,7 @@ void LM::dumpParams(FILE *fp){
 	handler->dump(fp);
 }
 
-void LM::readParams(FileReader &reader, unsigned char order){
+void LM::readParams(BinaryFileReader &reader, unsigned char order){
 	if(v.get_opt()==DALM_OPT_EMBEDDING){
 		handler = new EmbeddedDAHandler(reader, order, logger);
 	}else{

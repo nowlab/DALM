@@ -14,6 +14,7 @@ set(HEADERS
     include/da.h
     include/dalm.h
     include/fragment.h
+    include/fileutil.h
     include/handler.h
     include/logger.h
     include/pthread_wrapper.h

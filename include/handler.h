@@ -116,7 +116,7 @@ namespace DALM{
 	class EmbeddedDAHandler : public DAHandler{
 		public:
 			EmbeddedDAHandler(): value_array(NULL){}
-			EmbeddedDAHandler(FileReader &reader, unsigned char order, Logger &logger){
+			EmbeddedDAHandler(BinaryFileReader &reader, unsigned char order, Logger &logger){
 				reader >> danum;
 				da = new DA*[danum];
 				value_array = new ValueArray(reader, logger);

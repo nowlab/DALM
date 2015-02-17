@@ -31,7 +31,7 @@ namespace DALM {
 				opt = optimize;
 			}
 
-			Version(FileReader &reader, Logger &logger){
+			Version(BinaryFileReader &reader, Logger &logger){
 				unsigned int ftype;
 				unsigned int fversion;
 				unsigned int fopt=0;

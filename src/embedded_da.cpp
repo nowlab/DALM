@@ -38,7 +38,7 @@ EmbeddedDA::EmbeddedDA(
 	}  
 }
 
-EmbeddedDA::EmbeddedDA(FileReader &reader, ValueArray &value_array, EmbeddedDA **neighbours, unsigned char order, Logger &logger)
+EmbeddedDA::EmbeddedDA(BinaryFileReader &reader, ValueArray &value_array, EmbeddedDA **neighbours, unsigned char order, Logger &logger)
 	: value_array(value_array), logger(logger){
 	DA::context_size = order-1;
 	reader >> daid;
