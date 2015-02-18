@@ -44,6 +44,14 @@ add_library(
     ${SOURCE_FILES}
 )
 
+add_executable(mkworddict src/mkworddict.cpp)
+target_link_libraries(
+    mkworddict
+    dalm
+    pthread
+    SegFault
+)
+
 add_executable(query_sample sample/query_sample.cpp)
 target_link_libraries(
     query_sample
@@ -72,4 +80,4 @@ INSTALL(TARGETS dalm ARCHIVE DESTINATION lib)
 INSTALL(FILES ${HEADERS} DESTINATION include)
 INSTALL(FILES darts-clone/darts.h DESTINATION darts-clone)
 INSTALL(DIRECTORY scripts DESTINATION . USE_SOURCE_PERMISSIONS)
-INSTALL(TARGETS query_sample query_with_state_sample dalm_builder RUNTIME DESTINATION bin)
+INSTALL(TARGETS mkworddict query_sample query_with_state_sample dalm_builder RUNTIME DESTINATION bin)

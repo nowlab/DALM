@@ -47,6 +47,13 @@ def build(bld):
 	lib.includes = ['include']
 	bld.install_files('${PREFIX}/lib/', ['lib%s.a'%projname])
 
+	###### BUILD MKWORDDICT  ######
+	files = ['mkworddict.cpp']
+	files = map(lambda x: 'src/%s'%x, files)
+	builder = bld.program(source=' '.join(files), target='mkworddict')
+	builder.use = use
+	builder.includes = includes
+
 	###### BUILD DALM BUILDER ######
 	files = ['builder.cpp']
 	files = map(lambda x: 'src/%s'%x, files)

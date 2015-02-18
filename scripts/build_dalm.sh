@@ -25,7 +25,7 @@ INI=$OUTPUT/dalm.ini
 
 SCRIPTS=`dirname $0`
 BIN=$SCRIPTS/../bin
-MKWORDDICT=$SCRIPTS/mkworddict.sh
+MKWORDDICT=$BIN/mkworddict
 MKTREEFILE="ruby $SCRIPTS/mktreefile.rb"
 
 BUILDER=$BIN/dalm_builder
