@@ -13,6 +13,11 @@ typedef unsigned long int StateId;
 namespace DALM{
 	class State{
 		public:
+			class HashFunction {
+			public:
+				virtual std::size_t operator()(const VocabId *words, std::size_t size) const = 0;
+			};
+
 			State(): count(0){
 			}
 
@@ -85,6 +90,10 @@ namespace DALM{
 					sum += bows[i];
 				}
 				return sum;
+			}
+
+			inline std::size_t hash(const HashFunction &func) const{
+				return func(vids, count);
 			}
 
 		private:

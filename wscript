@@ -1,3 +1,4 @@
+import platform
 top='.'
 out='.build'
 
@@ -18,7 +19,9 @@ def configure(conf):
 	conf.env['CFLAGS']=option.split(" ")
 	conf.env['CXXFLAGS']=option.split(" ")
 
-	conf.env['LIB']=['pthread', 'SegFault']
+	conf.env['LIB']=['pthread']
+    	if platform.system() != "Darwin":
+        	conf.env['LIB'].append('SegFault')
 	conf.env['INCLUDES']=['darts-clone']
 
 	conf.define("DALM_MAX_ORDER",6)
@@ -31,7 +34,7 @@ def build(bld):
 	use = [projname]
 
 	###### INSTALL HEADERS ######
-	headers = ['arpafile.h', 'da.h', 'dalm.h', 'fragment.h', 'handler.h', 'logger.h', 'pthread_wrapper.h', 'state.h', 'treefile.h', 'value_array.h', 'value_array_index.h', 'vocabulary.h', 'vocabulary_file.h', 'version.h']
+	headers = ['arpafile.h', 'da.h', 'dalm.h', 'fileutil.h', 'fragment.h', 'handler.h', 'logger.h', 'pthread_wrapper.h', 'state.h', 'treefile.h', 'value_array.h', 'value_array_index.h', 'vocabulary.h', 'vocabulary_file.h', 'version.h']
 	headers = map(lambda x:'include/%s'%x, headers)
 	bld.install_files('${PREFIX}/include', headers)
 

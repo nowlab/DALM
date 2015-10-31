@@ -692,3 +692,18 @@ bool EmbeddedDA::bow_check(int length,unsigned int *ngram,float bow){
 	return false;
 }
 
+float EmbeddedDA::sum_bows(State &state, unsigned char begin, unsigned char end) {
+	int pos = 0;
+	int next;
+	int terminal;
+	unsigned short count = state.get_count();
+	float bow = 0.0f;
+
+	for(unsigned int i = 0; i < count; i++){
+		next = da_array[pos].base.base_val+state.get_word(i);
+		pos = next;
+		terminal = get_terminal(next);
+		bow += value_array[-da_array[terminal].check.check_val];
+	}
+	return bow;
+}

@@ -164,7 +164,7 @@ open(output, "w:ASCII-8BIT"){|fp|
 	fp.puts "\\n-grams:"
 }
 
-system("LC_ALL=C sort #{output}.tmp5 | sed -e 's/\x01 //g' >> #{output}")
+system("LC_ALL=C sort #{output}.tmp5 | LC_ALL=C sed -e 's/\x01 //g' >> #{output}")
 system("LC_ALL=C rm #{output}.tmp5")
 
 open(output,"a:ASCII-8BIT"){|fp|

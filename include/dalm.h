@@ -35,6 +35,8 @@ namespace DALM {
 			void init_state(State &state);
 			void set_state(VocabId *ngram, size_t n, State &state);
 			void set_state(State &state, const State &state_prev, const Fragment *fragments, const Gap &gap);
+
+			float sum_bows(State &state, unsigned char begin, unsigned char end);
 			
 			/* depricated */
 			StateId get_state(VocabId *ngram, size_t n);

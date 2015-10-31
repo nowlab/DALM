@@ -64,6 +64,8 @@ namespace DALM{
 			virtual unsigned long int get_state(VocabId *word, unsigned char order) = 0;
 			virtual bool checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bool bow_presence) = 0;
 
+			virtual float sum_bows(State &state, unsigned char begin, unsigned char end) = 0;
+
 		protected:
 			unsigned char context_size;
 	};
@@ -90,6 +92,8 @@ namespace DALM{
 			virtual unsigned long int get_state(VocabId *word, unsigned char order);
 
 			virtual bool checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bool bow_presence);
+
+			virtual float sum_bows(State &state, unsigned char begin, unsigned char end);
 
 		private:
 			void det_base(int *word,float *val,unsigned amount,unsigned now);

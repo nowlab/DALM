@@ -73,6 +73,8 @@ namespace DALM{
 					da[i]->dump(fp);
 				}
 			}
+
+			virtual float sum_bows(State &state, unsigned char begin, unsigned char end) = 0;
 			
 		protected:
 			virtual size_t get_daid(VocabId *ngram, size_t n) = 0;
@@ -150,6 +152,10 @@ namespace DALM{
 				}
 				delete [] builder;
 			}
+
+                        virtual float sum_bows(State &state, unsigned char begin, unsigned char end){
+                                return da[state.get_word(0)%danum]->sum_bows(state, begin, end);
+                        }
 
 		protected:
 			virtual size_t get_daid(VocabId *ngram, size_t n){

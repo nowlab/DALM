@@ -168,3 +168,7 @@ Model::Model(std::string basedir, unsigned char order, Logger &logger): order(or
 	lm = new LM(model, *vocab, order, logger);
 	vocab_file = new VocabularyFile(wordstxt);
 }
+
+float LM::sum_bows(State &state, unsigned char begin, unsigned char end) {
+	return handler->sum_bows(state, begin, end);
+}
