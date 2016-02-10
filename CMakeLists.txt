@@ -8,6 +8,9 @@ set(CMAKE_MACOSX_RPATH FALSE)
 find_package(Boost COMPONENTS python REQUIRED)
 find_package(PythonLibs REQUIRED)
 
+add_subdirectory(tests/gtest)
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+
 add_definitions(-DDALM_MAX_ORDER=6)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")
@@ -107,8 +110,6 @@ add_library(
 )
 
 add_executable(dalm_test_all
-    tests/gtest-all.cc
-    tests/gtest_main.cc
     tests/test_build.cpp
     tests/test_query.cpp
 )
@@ -117,6 +118,8 @@ target_link_libraries(
     dalm_test_helper
     dalm
     pthread
+    gtest
+    gtest_main
 )
 
 if(WITH_PYTHON)

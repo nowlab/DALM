@@ -207,7 +207,3 @@ Model::Model(std::string modeldir, Logger &logger): modeldir(modeldir), logger(l
 float LM::sum_bows(State &state, unsigned char begin, unsigned char end) {
     return handler->sum_bows(state, begin, end);
 }
-
-float LM::sum_bows(State &state, unsigned char begin, unsigned char end) {
-	return handler->sum_bows(state, begin, end);
-}
