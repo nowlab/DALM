@@ -25,12 +25,11 @@ To build DALM by CMake:
 ## Usage
 ### Building a DALM model
 To build a DALM model, run:
-> [install dir]/scripts/build_dalm.sh [ARPA File] [Division Number] [Output Directory]
+> [install dir]/bin/build_dalm -f method -f [path to lm] -o [path to output] -d #div -c #cores
 
 If you need to build a large language model (for example, over 30GB in ARPA Format),
 we recommend to set the division number "8" or "16" (or larger!).
 
-You may need Ruby 2.0 to run the script.
 This script generates following files into [Output Directory]:
 
 * dalm.ini : information of the model.
@@ -52,12 +51,9 @@ On the build time, you may link the libraries which are stored in the [install d
 We use following libraries:
 
 * Darts-clone 0.32g : <https://code.google.com/p/darts-clone/>
-
-To build the source code, we use waf build system version 1.7.13.
-We include them into our code.
-Here is an original download site of waf.
-
-* <http://code.google.com/p/waf/>
+* ezOptionParser v0.2.2 : <http://ezoptionparser.sourceforge.net/>
+* waf 1.7.13 : <http://code.google.com/p/waf/>
 
 ## License
-The source code is provided under LGPL v3.
+The source code is provided under LGPL v3.  
+For details, see LICENSE.
