@@ -4,12 +4,8 @@
 #include <limits.h>
 
 #include <utility>
-#include <fileutil.h>
-
-#include "treefile.h"
-#include "da.h"
-#include "value_array.h"
-#include "value_array_index.h"
+#include "dalm.h"
+#include "dalm/embedded_da.h"
 
 using namespace DALM;
 
@@ -153,14 +149,26 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 	delete [] values;
 }
 
-void EmbeddedDA::dump(FILE *fp)
-{
-	fwrite(&daid,sizeof(unsigned char),1,fp);
-	fwrite(&datotal,sizeof(unsigned char),1,fp);
-	fwrite(&max_index,sizeof(unsigned),1,fp);
-	fwrite(da_array, sizeof(DAPair), max_index+1, fp);
-
+void EmbeddedDA::dump(BinaryFileWriter &writer) {
+	writer << daid;
+	writer << datotal;
+	writer << max_index;
+	writer.write_many(da_array, max_index+1);
 	logger << "EmbeddedDA[" << daid << "] da-size: " << max_index << Logger::endi;
+}
+
+void EmbeddedDA::write_and_free(BinaryFileWriter &writer){
+	writer.write_many(da_array, max_index+1);
+	if(da_array != NULL) delete [] da_array;
+	if(value_id != NULL) delete [] value_id;
+	da_array = NULL;
+	value_id = NULL;
+}
+
+void EmbeddedDA::reload(BinaryFileReader &reader){
+	array_size = max_index+1;
+	da_array = new DAPair[array_size];
+	reader.read_many(da_array, array_size);
 }
 
 float EmbeddedDA::get_prob(VocabId *word, unsigned char order){
@@ -326,7 +334,7 @@ float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap){
 
 	if(count <= g){
 		throw "BUG";
-		//finalized=true;
+		//independent_left=true;
 		//extended=false;
 		//return 0.0;
 	}
@@ -403,7 +411,7 @@ float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap, Fragme
 
 	if(count <= g){
 		throw "BUG";
-		//finalized=true;
+		//independent_left=true;
 		//extended=false;
 		//return 0.0;
 	}
