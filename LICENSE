@@ -70,3 +70,8 @@ License of moses decoder v3. (moses/DALMWrapper.cpp)
 The license of Moses decoder is just written as LGPL (no version detailed). 
 Please see http://www.statmt.org/moses/ for details.
 
+-----------
+
+License of google tests. (tests/gtest*)
+
+Please see tests/gtest/gtest.h .

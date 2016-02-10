@@ -55,6 +55,7 @@ We use following libraries:
 * Darts-clone 0.32g : <https://code.google.com/p/darts-clone/>
 * ezOptionParser v0.2.2 : <http://ezoptionparser.sourceforge.net/>
 * waf 1.7.13 : <http://code.google.com/p/waf/>
+* google test
 
 ## Patch for Moses decoder 3.0
 You can use DALM with Moses decoder 3.0 but it has small defeat. It results in worse model scores.
