@@ -33,7 +33,6 @@ set(HEADERS
     src/dalm/bst_da.h
     src/dalm/embedded_da.h
     src/dalm/reverse_da.h
-    src/dalm/reverse_trie_da.h
     src/dalm/fragment.h
     src/dalm/fileutil.h
     src/dalm/handler.h
@@ -61,7 +60,6 @@ set(SOURCE_FILES
     src/dalm.cpp
     src/logger.cpp
     src/reverse_da.cpp
-    src/reverse_trie_da.cpp
     src/value_array.cpp
     src/vocabulary.cpp
     src/dalm.cpp
