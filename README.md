@@ -8,6 +8,9 @@ This method is described on:
 * Paper : <http://www.aclweb.org/anthology/D13-1023>
 * Slide : <http://www.slideshare.net/jnory/dalm-emnlp-27373037>
 
+> Jun-ya Norimatsu, Makoto Yasuhara, Toru Tanaka, and Mikio Yamamoto. 2016. “A Fast and Compact Language Model Implementation Using Double-array Structures.” To appear in the Transactions on Asian and Low-Resource Language Information Processing (TALLIP). 
+
+
 ## Build Instruction
 To build DALM, use waf build system.
 Run the command:
@@ -38,9 +41,8 @@ This script generates following files into [Output Directory]:
 * words.txt : a set of words of the model.
 
 ### Building a DALM model in parallel
-By default, build_dalm.sh uses all cores in your CPU.
-If you want to reserve some computing resources, you may create /tmp/cpu_reserved file and write the number of cores you want to reserve.
-If you have 4 cores and you want to use only 3, you may write only '1' in /tmp/cpu_resered file.
+By default, build_dalm.sh uses 4 cores in your CPU.
+If you have 4 cores and you want to use only 3, please set `-c 3` to the option.
 
 ### Using DALM on your system
 We include a sample program to use DALM on your system.
@@ -53,6 +55,10 @@ We use following libraries:
 * Darts-clone 0.32g : <https://code.google.com/p/darts-clone/>
 * ezOptionParser v0.2.2 : <http://ezoptionparser.sourceforge.net/>
 * waf 1.7.13 : <http://code.google.com/p/waf/>
+
+## Patch for Moses decoder 3.0
+You can use DALM with Moses decoder 3.0 but it has small defeat. It results in worse model scores.
+Please replace `src/LM/DALMWrapper.cpp` with `moses/DALMWrapper.cpp` and re-compile with `--with-dalm` option.
 
 ## License
 The source code is provided under LGPL v3.  
