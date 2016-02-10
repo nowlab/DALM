@@ -198,28 +198,6 @@ namespace DALM {
         }
     }
 
-    void sort_reverse_trie_order(BinaryFileReader &reader, std::size_t n_entries, std::string outpath, std::string tempdir, Logger &logger, std::size_t memory_limit){
-        logger << "Sorting in Reverse Trie Order." << Logger::endi;
-        Sort::Sorter<File::ARPAEntry, ARPAEntryTrieOrderCompare> sorter(tempdir, memory_limit);
-        for(std::size_t i = 0; i < n_entries; ++i){
-            File::ARPAEntry entry;
-            reader >> entry;
-
-            // reverse entry.
-            File::ARPAEntry rev_entry(entry.words, entry.n, entry.prob, entry.bow, entry.bow_presence);
-            sorter.push(rev_entry);
-        }
-        sorter.freeze();
-
-        logger << "Writing data." << Logger::endi;
-        BinaryFileWriter writer(outpath);
-        writer << n_entries;
-        for(std::size_t i = 0; i < n_entries; ++i){
-            File::ARPAEntry entry = sorter.pop();
-            writer << entry;
-        }
-    }
-
     void sort_bst_order(BinaryFileReader &reader, std::size_t n_entries, std::string outpath, std::string tempdir, Logger &logger, std::size_t memory_limit){
         logger << "Sorting in BST Order." << Logger::endi;
         Sort::Sorter<File::ARPAEntry, ARPAEntryTrieOrderCompare> sorter(tempdir, memory_limit);
@@ -291,28 +269,6 @@ namespace DALM {
         sort_rev_order(forward_reader, n_total, outpath, tempdir, logger, memory_limit);
     }
 
-    void build_reverse_trie(
-            std::string tempdir, std::string arpafile, std::string outpath, Vocabulary &vocab, Logger &logger, std::size_t memory_limit
-    ){
-
-        BinaryFileWriter *rev_writer = BinaryFileWriter::get_temporary_writer(tempdir);
-        std::size_t n_total = sort_reverse_order(tempdir, arpafile, *rev_writer, vocab, logger, true, memory_limit);
-
-        FILE *fp = rev_writer->pointer();
-        delete rev_writer;
-        std::rewind(fp);
-        BinaryFileReader rev_reader(fp);
-
-        BinaryFileWriter *forward_writer = BinaryFileWriter::get_temporary_writer(tempdir);
-        sort_forward_order(rev_reader, n_total, *forward_writer, tempdir, memory_limit, logger);
-
-        fp = forward_writer->pointer();
-        delete forward_writer;
-        std::rewind(fp);
-        BinaryFileReader forward_reader(fp);
-        sort_reverse_trie_order(forward_reader, n_total, outpath, tempdir, logger, memory_limit);
-    }
-
     void build_bst(
             std::string tempdir, std::string arpafile, std::string outpath, Vocabulary &vocab, Logger &logger, std::size_t memory_limit
     ){
@@ -374,9 +330,7 @@ namespace DALM {
             need_endmarker = true;
             builder = build_bst;
         }else if(optmethod=="reversetrie"){
-            method = DALM_OPT_REVERSE_TRIE;
-            need_endmarker = false;
-            builder = build_reverse_trie;
+            throw std::runtime_error("removed");
         }else{
             throw std::runtime_error("unknown optimization");
         }

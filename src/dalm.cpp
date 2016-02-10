@@ -9,7 +9,6 @@
 #include "dalm/embedded_da.h"
 #include "dalm/reverse_da.h"
 #include "dalm/bst_da.h"
-#include "dalm/reverse_trie_da.h"
 
 using namespace DALM;
 
@@ -121,8 +120,6 @@ void LM::build(std::string &pathtoarpa, std::string &pathtotreefile, unsigned in
         handler = new ReverseDAHandler();
     }else if(v.get_opt()==DALM_OPT_EMBEDDING){
         handler = new EmbeddedDAHandler();
-    }else if(v.get_opt()== DALM_OPT_REVERSE_TRIE){
-        handler = new ReverseTrieDAHandler();
     }else if(v.get_opt()== DALM_OPT_BST){
         handler = new BstDAHandler();
     }else{
@@ -146,8 +143,6 @@ void LM::readParams(BinaryFileReader &reader, unsigned char order){
         handler = new ReverseDAHandler(reader, order, logger);
     }else if(v.get_opt() == DALM_OPT_EMBEDDING){
         handler = new EmbeddedDAHandler(reader, order, logger);
-    }else if(v.get_opt() == DALM_OPT_REVERSE_TRIE){
-        handler = new ReverseTrieDAHandler(reader, order, logger);
     }else if(v.get_opt() == DALM_OPT_BST){
         handler = new BstDAHandler(reader, order, logger);
     }else{
