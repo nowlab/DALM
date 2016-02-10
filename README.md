@@ -56,10 +56,6 @@ We use following libraries:
 * ezOptionParser v0.2.2 : <http://ezoptionparser.sourceforge.net/>
 * waf 1.7.13 : <http://code.google.com/p/waf/>
 
-## Patch for Moses decoder 3.0
-You can use DALM with Moses decoder 3.0 but it has small defeat. It results in worse model scores.
-Please replace `src/LM/DALMWrapper.cpp` with `moses/DALMWrapper.cpp` and re-compile with `--with-dalm` option.
-
 ## License
 The source code is provided under LGPL v3.  
 For details, see LICENSE.
