@@ -112,7 +112,7 @@ namespace DALM {
 			return bow_presence;
 		}
 
-        static void create_vocab_and_order(std::string arpafile, std::vector<std::string> &words, std::vector<VocabId> &ids){
+        static void create_vocab_and_order(std::string arpafile, std::vector<std::string> &words, std::vector<VocabId> &ids, bool need_endmarker){
 			TextFileReader file(arpafile);
 			size_t ngramorder;
 			size_t total;
@@ -156,14 +156,18 @@ namespace DALM {
 
 			std::vector<UnigramOrder> word_order;
 			word_order.reserve(unigram_count + 1);
-			UnigramOrder o;
-			o.word = "<#>";
-			o.id = 1;
-			word_order.push_back(o);
+			VocabId offset = 1;
+			if(need_endmarker){
+				UnigramOrder o;
+				o.word = "<#>";
+				o.id = offset;
+				word_order.push_back(o);
+				++offset;
+			}
 			for(std::size_t i = 0; i < unigram_count; i++){
 				UnigramOrder o;
 				o.word = unigrams[i].word;
-				o.id = (VocabId)i + 2;
+				o.id = (VocabId)i + offset;
 				word_order.push_back(o);
 			}
 			std::sort(word_order.begin(), word_order.end(), UnigramOrderCompare());

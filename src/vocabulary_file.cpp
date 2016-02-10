@@ -1,4 +1,4 @@
-#include "vocabulary_file.h"
+#include "dalm/vocabulary_file.h"
 
 using namespace DALM;
 
