@@ -13,9 +13,12 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+Followings are licenses of the third party codes.
+
 -----------
 
-License of darts-clone 0.32g.
+License of darts-clone 0.32g. (externals/darts.h)
 
 
 https://code.google.com/p/darts-clone/
@@ -50,7 +53,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -----------
 
-License of ezOptionParser v0.2.2.
+License of ezOptionParser v0.2.2. (externals/ezOptionParser.hpp)
 
 Copyright (C) 2011,2012 Remik Ziemlinski
 
@@ -59,4 +62,11 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+-----------
+
+License of moses decoder v3. (moses/DALMWrapper.cpp)
+
+The license of Moses decoder is just written as LGPL (no version detailed). 
+Please see http://www.statmt.org/moses/ for details.
 
