@@ -13,21 +13,15 @@ def configure(conf):
     #option = '-g -pg'
 
     # normal optimization.
-    #option = '-O3 -Wall -DNDEBUG'
+    option = '-O3 -Wall -DNDEBUG'
     #option = '-O3 -Wall -DNDEBUG -g -pg'
 
-    # same compile options as moses' kenlm(profile).
-    #option = '-ftemplate-depth-128 -O3 -finline-functions -Wno-inline -Wall -g -pg -pthread  -DBOOST_FILE_SYSTEM_DYN_LINK -DBOOST_IOSTREAMS_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK -DBOOST_TEST_DYN_LINK -DBOOST_THREAD_DYN_DLL -DKENLM_MAX_ORDER=6 -DNDEBUG -DTRACE_ENABLE=1 -DWITH_THREADS -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES'
-    # same compile options as moses' kenlm(release).
-    option = '-ftemplate-depth-128 -O3 -finline-functions -Wno-inline -Wall -g -pthread -DKENLM_MAX_ORDER=6 -DNDEBUG -DTRACE_ENABLE=1 -DWITH_THREADS -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES'
+    conf.env['CFLAGS']=option.split(" ")
+    conf.env['CXXFLAGS']=option.split(" ")
 
-	conf.env['LIB']=['pthread']
-    	if platform.system() != "Darwin":
-        	conf.env['LIB'].append('SegFault')
-	conf.env['INCLUDES']=['darts-clone']
-
-    conf.env['LIB']=['pthread', 'SegFault']
-    #conf.env['LIB']=['pthread']
+    conf.env['LIB']=['pthread']
+    if platform.system() != "Darwin":
+       	conf.env['LIB'].append('SegFault')
     conf.env['INCLUDES']=['externals']
 
     conf.define("DALM_MAX_ORDER",6)
