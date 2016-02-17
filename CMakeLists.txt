@@ -73,7 +73,7 @@ add_library(
     ${SOURCE_FILES}
 )
 
-add_executable(query_dalm sample/query_sample.cpp)
+add_executable(query_dalm examples/query_example.cpp)
 target_link_libraries(
     query_dalm
     dalm
