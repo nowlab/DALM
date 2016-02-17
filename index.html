@@ -37,19 +37,20 @@
 	</p>
 
         <h1>Quick Start</h1>
-	<h2>Docker</h2>
 	<p>
 	<code> # docker pull nowlab/DALM</code>
 	</p>
 
+
+	<h1>Build DALM from source.</h1>
         <h2>Python</h2>
 	<p>
 	<code> # pip install DALM </code>
 	</p>
 
-	<h1>Build DALM from source.</h1>
+	<h2>C++</h2>
 	<p>
-	<code> # mkdir build && cd build && cmake .. && make install</code>
+	<code> # mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=../local && make install</code>
 	</p>
 
 	<h1>Use DALM with your language model.</h1>
@@ -59,20 +60,20 @@
 
 	<h2>Build binary model</h2>
 	<p>
+	<code> # build_dalm -f /path/to/arpa.file -o /path/to/output</code>
 	</p>
 
-        <h1>Use DALM with Moses decoder.</h1>
+        <h2>Use DALM with Moses decoder.</h2>
 	<p>
 	DALM is integrated with <a href="http://www.statmt.org/moses/">Moses decoder</a>.
-	We distribute pre-build docker image <a href="#">here</a>.
 	</p>
 
 	<h2>Build Moses decoder with DALM</h2>
 	<p>
+	<code> # ./bjam --with-dalm=/path/to/DALM</code>
 	</p>
 
 	<h2>Write moses.ini</h2>
-
 
 	<h1>Use DALM with your code.</h1>
 	<h2>From Python</h2>
