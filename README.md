@@ -12,13 +12,7 @@ This method is described on:
 
 
 ## Build Instruction
-To build DALM, use waf build system.
-Run the command:
-> ./waf configure build install --prefix=[install dir]
-
-
-### (Experimental) CMake build
-To build DALM by CMake:
+To build DALM:
   mkdir build
   cd build
   cmake .. -DCMAKE_INSTALL_PREFIX=[install dir]
