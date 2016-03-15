@@ -5,8 +5,11 @@ enable_testing()
 
 set(CMAKE_MACOSX_RPATH FALSE)
 
-find_package(Boost COMPONENTS python REQUIRED)
-find_package(PythonLibs REQUIRED)
+if(WITH_PYTHON)
+    find_package(Boost COMPONENTS python REQUIRED)
+    find_package(PythonLibs REQUIRED)
+    include_directories(${PYTHON_INCLUDE_DIRS})
+endif()
 
 add_subdirectory(tests/gtest)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
@@ -18,7 +21,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -flto")
 include_directories("externals")
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${PYTHON_INCLUDE_DIRS})
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/dalm_test_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/dalm_test_config.h)
 
