@@ -134,4 +134,40 @@ namespace {
         }
         delete m;
     }
+
+    TEST_F(QueryTest, test_bst_single){
+        DALM::Model *m = build_dalm_for_test("bst_query_single", "bst", logger, 4);
+
+        std::string test_file = std::string(SOURCE_ROOT) + "/tests/data/kftt-tune.10.ja";
+        std::string expected_file = std::string(SOURCE_ROOT) + "/tests/data/test_query_expected.txt";
+
+        std::ifstream efile(expected_file.c_str());
+        std::ifstream tfile(test_file.c_str());
+
+        DALM::VocabId ngram[5];
+        while(!efile.eof()){
+            float sentence_prob;
+            efile >> sentence_prob;
+
+            std::string line;
+            std::getline(tfile, line);
+            std::istringstream iss(line);
+            float prob = 0.0;
+            DALM::VocabId s_tag_start = m->vocab->lookup("<s>");
+            std::fill(ngram, ngram + 5, s_tag_start);
+            while(!iss.eof()){
+                std::string word;
+                iss >> word;
+                DALM::VocabId id = m->vocab->lookup(word.c_str());
+                push(ngram, 5, id);
+                prob += m->lm->query(ngram, 5);
+            }
+            DALM::VocabId s_tag_end = m->vocab->lookup("</s>");
+            push(ngram, 5, s_tag_end);
+            prob += m->lm->query(ngram, 5);
+
+            EXPECT_NEAR(sentence_prob, prob, 0.001);
+        }
+        delete m;
+    }
 }

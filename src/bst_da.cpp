@@ -317,7 +317,11 @@ float BstDA::get_prob(VocabId *word, unsigned char order){
     Target target;
     for(unsigned int i = 1; i < order; i++){
         if(traverse_query(word[i], t)){
-            if(traverse_to_target(target_word, t, target)){
+            if(t.independent_right()) {
+                int endmarker_node = 1 + t.base();
+                target.bow_ = da_array_[endmarker_node].check.logbow;
+                bow += target.bow(bow_max_);
+            }else if(traverse_to_target(target_word, t, target)){
                 bow = 0.0;
             }else{
                 bow += target.bow(bow_max_);
