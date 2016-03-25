@@ -302,24 +302,26 @@ float ReverseDA::get_prob(VocabId *word, unsigned char order){
     for(unsigned char depth=0; depth < order; ++depth){
         if(jump(t, word[depth])){
             level = depth + 1;
+            target.set(this, t);
+            if(target.independent_left()){
+                break;
+            }
         }else{
             break;
         }
-    }
-    if(t.index > 0){
-        target.set(this, t);
     }
 
     if(order > 1){
         ReverseDA *da = da_[word[1] % datotal_];
         t.init(da, 0);
 
+        Target bow_target;
         for(unsigned char hist = 1; hist < order; ++hist){
-            if(da->jump(t, word[hist])){
-                target.set(da, t);
-                if(!target.independent_right()){
+            if(t.base() >= 0 && da->jump(t, word[hist])){
+                bow_target.set(da, t);
+                if(!bow_target.independent_right()){
                     if(hist >= level){
-                        bow += target.bow(bow_max_);
+                        bow += bow_target.bow(da->bow_max_);
                     }
                 }
             }else{
