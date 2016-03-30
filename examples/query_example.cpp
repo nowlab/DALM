@@ -193,7 +193,9 @@ bool parse_args(ez::ezOptionParser &opt, int argc, char const **argv){
 
 int main(int argc, char const **argv){
     ez::ezOptionParser opt;
-    parse_args(opt, argc, argv);
+    if(!parse_args(opt, argc, argv)){
+        return 1;
+    }
 
     std::string path;
     opt.get("--dalm")->getString(path);;
