@@ -16,14 +16,14 @@
     <!-- HEADER -->
     <div id="header_wrap" class="outer">
         <header class="inner">
-          <a id="forkme_banner" href="repository_url}}">View on GitHub</a>
+          <a id="forkme_banner" href="https://github.com/nowlab/DALM">View on GitHub</a>
 
           <h1 id="project_title">DALM</h1>
           <h2 id="project_tagline">A language model implementation using double-array structures</h2>
 
           <section id="downloads">
-            <a class="zip_download_link" href="#">Download this project as a .zip file</a>
-            <a class="tar_download_link" href="#">Download this project as a tar.gz file</a>
+            <a class="zip_download_link" href="https://github.com/nowlab/DALM/archive/v3.0.0-stable.zip">Download this project as a .zip file</a>
+            <a class="tar_download_link" href="https://github.com/nowlab/DALM/archive/v3.0.0-stable.tar.gz">Download this project as a tar.gz file</a>
           </section>
         </header>
     </div>
@@ -36,21 +36,23 @@
 	DALM is faster and smaller language model implementation using double-array structures.
 	</p>
 
-        <h1>Quick Start</h1>
+    <h1>Quick Start</h1>
 	<p>
-	<code> # docker pull nowlab/DALM</code>
+	<code> # docker pull nowlab/dalm_translation_kit:20160330</code>
 	</p>
-
+    <p>
+		You may see DALM components and Moses decoder under /opt. Moses decoder is linked to DALM.
+	</p>
 
 	<h1>Build DALM from source.</h1>
-        <h2>Python</h2>
-	<p>
-	<code> # pip install DALM </code>
-	</p>
-
 	<h2>C++</h2>
 	<p>
 	<code> # mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=../local && make install</code>
+	</p>
+
+	<h2>(Experimental) Python</h2>
+	<p>
+	<code> (comming soon...) </code>
 	</p>
 
 	<h1>Use DALM with your language model.</h1>
@@ -63,9 +65,11 @@
 	<code> # build_dalm -f /path/to/arpa.file -o /path/to/output</code>
 	</p>
 
-        <h2>Use DALM with Moses decoder.</h2>
+    <h2>Use DALM with Moses decoder.</h2>
 	<p>
 	DALM is integrated with <a href="http://www.statmt.org/moses/">Moses decoder</a>.
+	We also distribute a docker image including pre-build DALM and Moses decoder.
+	<a href="https://hub.docker.com/r/nowlab/dalm_translation_kit/">&gt;&gt; Our Dockerhub page</a>
 	</p>
 
 	<h2>Build Moses decoder with DALM</h2>
@@ -74,19 +78,32 @@
 	</p>
 
 	<h2>Write moses.ini</h2>
+	  <pre>
+[feature]
+...
+PhraseDictionaryMemory name=TranslationModel0 num-features=4 path=/path/to/rule-table.gz input-factor=0 output-factor=0
+...
+DALM name=LM0 factor=0 path=/path/to/dalm_model_directory order=5
+
+...
+[weight]
+LM0= ...
+</pre>
 
 	<h1>Use DALM with your code.</h1>
-	<h2>From Python</h2>
-	<p>
-	</p>
-
 	<h2>From C++</h2>
 	<p>
+		Please see <a href="https://github.com/nowlab/DALM/blob/v3.0.0-stable/examples/query_example.cpp">an example</a>.
+	</p>
+
+	<h2>(Experimental) From Python</h2>
+	<p>
+		Please see <a href="https://github.com/nowlab/DALM/blob/v3.0.0-stable/examples/python_example.ipynb">an example</a>.
 	</p>
 
 	<h1>License</h1>
 	DALM is free software under <a href="#">LGPL</a>.
-      </section>
+    </section>
     </div>
 
     <!-- FOOTER  -->
