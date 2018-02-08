@@ -9,6 +9,8 @@
 #define DALM_OPT_REVERSE 2
 // #define DALM_OPT_REVERSE_TRIE 3
 #define DALM_OPT_BST 4
+#define DALM_OPT_PT 8
+#define DALM_OPT_QPT 9
 
 #include<cstdio>
 
@@ -26,7 +28,8 @@ namespace DALM {
             Version(unsigned int optimize, Logger &logger){
                 type = DALM_FILE_TYPE;
                 version = DALM_FILE_VERSION;
-                if(optimize!=DALM_OPT_REVERSE && optimize!=DALM_OPT_EMBEDDING && optimize != DALM_OPT_BST){
+                if(optimize!=DALM_OPT_REVERSE && optimize!=DALM_OPT_EMBEDDING && optimize != DALM_OPT_BST &&
+                    optimize!=DALM_OPT_PT && optimize!=DALM_OPT_QPT){
                     logger << "[Version::Version] Unrecognized format." << Logger::ende;
                     throw "[Version::Version] Unrecognized format.";
                 }
@@ -51,7 +54,8 @@ namespace DALM {
                     type=ftype;
                     version=fversion;
                     reader >> fopt;
-                    if(fopt!=DALM_OPT_EMBEDDING && fopt!=DALM_OPT_REVERSE && fopt != DALM_OPT_BST){
+                    if(fopt!=DALM_OPT_EMBEDDING && fopt!=DALM_OPT_REVERSE && fopt != DALM_OPT_BST && 
+                        fopt!=DALM_OPT_PT && fopt!=DALM_OPT_QPT){
                         logger << "[Version::Version] Unrecognized optimization." << Logger::ende;
                         throw "[Version::Version] Unrecognized optimization.";
                     }

@@ -3,6 +3,7 @@
 #include<iostream>
 #include<fstream>
 #include<sstream>
+#include<chrono>
 #include <ezOptionParser.hpp>
 
 #include "../src/dalm.h"
@@ -14,6 +15,12 @@ void push(DALM::VocabId *ngram, size_t n, DALM::VocabId wid){
         ngram[i] = ngram[i-1];
     }
     ngram[0] = wid;
+}
+
+void print_ngram(DALM::VocabId* ngram,unsigned char order){
+    cout << (int)order << "-gram query( "; 
+    for(int i = 0; i < (int)order; i++) cout << ngram[i] << " ";
+    cout << ")" << endl;
 }
 
 int query_without_state(std::string path){
@@ -56,6 +63,7 @@ int query_without_state(std::string path){
     //////////////
     // QUERYING //
     //////////////
+    long long time_sum = 0;
     string stagstart = "<s>";
     string stagend = "</s>";
     DALM::VocabId wid_start = vocab.lookup(stagstart.c_str());
@@ -65,6 +73,7 @@ int query_without_state(std::string path){
     
     getline(cin, line);
     while(cin){
+        float total = 0.0f;
         for(size_t i = 0; i < order; i++){
             ngram[i] = wid_start;
         }
@@ -80,19 +89,28 @@ int query_without_state(std::string path){
             float prob = 0.0;
             // QUERYING
             // Note that the ngram array is in reverse order.
+            // print_ngram(ngram, order);
+            auto start = chrono::system_clock::now();
             prob = lm.query(ngram, order);
+            auto end = chrono::system_clock::now();
+            time_sum += std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+
 
             cout << word << " => " << prob << endl;
+            total += prob;
 
             iss >> word;
         }
         push(ngram, order, wid_end);
         float prob = lm.query(ngram, order);
         cout << stagend << " => " << prob << endl;
+        total += prob;
+        cout << "total => " << total << endl;
         
         getline(cin, line);
     }
 
+    cout << "querying time: " << time_sum << " msec." << endl;
     return 0;
 }
 
@@ -135,6 +153,7 @@ int query_with_state(std::string path){
     //////////////
     // QUERYING //
     //////////////
+    auto start = chrono::system_clock::now();
     string stagend = "</s>";
     DALM::VocabId wid_end = vocab.lookup(stagend.c_str());
     string line;
@@ -166,6 +185,9 @@ int query_with_state(std::string path){
         getline(cin, line);
     }
 
+    auto end = chrono::system_clock::now();
+    auto diff = end - start;
+    cout << "querying time: " << chrono::duration_cast<chrono::milliseconds>(diff).count() << " msec." << endl;
     return 0;
 }
 

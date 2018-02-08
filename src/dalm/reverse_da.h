@@ -3,6 +3,8 @@
 
 #include <cmath>
 #include <limits>
+#include <mutex>
+#include <thread>
 #include "bst_da.h"
 #include "da.h"
 
@@ -112,6 +114,7 @@ namespace DALM {
         void replace_value(float *&values);
         void fit_to_size(int max_slot);
 
+        static std::mutex mtx;
         long array_size_;
         DAPair *da_array_;
         unsigned int daid_;

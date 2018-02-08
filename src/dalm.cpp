@@ -9,16 +9,29 @@
 #include "dalm/embedded_da.h"
 #include "dalm/reverse_da.h"
 #include "dalm/bst_da.h"
+#include "dalm/pt_da.h"
+#include "dalm/qpt_da.h"
+
+namespace DALM{
+  namespace QUANT_INFO{
+    int prob_bits;
+    int bow_bits;
+    int independent_left_mask;
+    int prob_mask;
+    std::vector<float> prob_bin[DALM_MAX_ORDER];
+    std::vector<float> bow_bin[DALM_MAX_ORDER];
+  }
+}
 
 using namespace DALM;
 
-LM::LM(std::string pathtoarpa, std::string pathtotree, Vocabulary &vocab, unsigned int dividenum, unsigned int opt, std::string tmpdir, unsigned int n_cores, Logger &logger)
+LM::LM(std::string pathtoarpa, std::string pathtotree, Vocabulary &vocab, unsigned int dividenum, unsigned int opt, std::string tmpdir, unsigned int n_cores, Logger &logger, int transpose, int prob_bit, int bow_bit)
         :vocab(vocab), v(Version(opt, logger)), logger(logger) {
     logger << "[LM::LM] TEXTMODE begin." << Logger::endi;
     logger << "[LM::LM] pathtoarpa=" << pathtoarpa << Logger::endi;
     logger << "[LM::LM] pathtotree=" << pathtotree << Logger::endi;
 
-    build(pathtoarpa, pathtotree, dividenum, tmpdir, n_cores);
+    build(pathtoarpa, pathtotree, dividenum, tmpdir, n_cores, transpose, prob_bit, bow_bit);
     std::string stagstart = "<s>";
     stagid = vocab.lookup(stagstart.c_str());
     logger << "[LM::LM] end." << Logger::endi;
@@ -113,7 +126,7 @@ std::size_t LM::errorcheck(std::string &pathtoarpa){
     return error_num;
 }
 
-void LM::build(std::string &pathtoarpa, std::string &pathtotreefile, unsigned int dividenum, std::string &tmpdir, unsigned int n_cores) {
+void LM::build(std::string &pathtoarpa, std::string &pathtotreefile, unsigned int dividenum, std::string &tmpdir, unsigned int n_cores, int transposed, int prob_bit, int bow_bit) {
     logger << "[LM::build] LM build begin." << Logger::endi;
 
     if(v.get_opt()==DALM_OPT_REVERSE){
@@ -122,6 +135,47 @@ void LM::build(std::string &pathtoarpa, std::string &pathtotreefile, unsigned in
         handler = new EmbeddedDAHandler();
     }else if(v.get_opt()== DALM_OPT_BST){
         handler = new BstDAHandler();
+    }else if(v.get_opt()== DALM_OPT_PT){
+        handler = new PartlyTransposedDAHandler(transposed);
+    }else if(v.get_opt()== DALM_OPT_QPT){
+
+      if(prob_bit == 0) prob_bit = 32;
+      if(bow_bit == 0) bow_bit = 32;
+
+        if(prob_bit < 8){
+            if(bow_bit < 9){
+                handler = new QuantPartlyTransposedDAHandler<char,char>(transposed);
+                logger << "[LM::build][Quant] char char " << Logger::endc;
+            }else if(bow_bit < 17){
+                handler = new QuantPartlyTransposedDAHandler<char,short>(transposed);
+                logger << "[LM::build][Quant] char short" << Logger::endc;
+            }else{
+                handler = new QuantPartlyTransposedDAHandler<char,int>(transposed);
+                logger << "[LM::build][Quant] char int " << Logger::endc;
+            }
+        }else if(prob_bit < 16){
+            if(bow_bit < 9){
+                handler = new QuantPartlyTransposedDAHandler<short,char>(transposed);
+                logger << "[LM::build][Quant] short char " << Logger::endc;
+            }else if(bow_bit < 17){
+                handler = new QuantPartlyTransposedDAHandler<short,short>(transposed);
+                logger << "[LM::build][Quant] short short " << Logger::endc;
+            }else{
+                handler = new QuantPartlyTransposedDAHandler<short,int>(transposed);
+                logger << "[LM::build][Quant] short int " << Logger::endc;
+            }
+        }else{
+            if(bow_bit < 9){
+                handler = new QuantPartlyTransposedDAHandler<int,char>(transposed);
+                logger << "[LM::build][Quant] int char " << Logger::endc;
+            }else if(bow_bit < 17){
+                handler = new QuantPartlyTransposedDAHandler<int,short>(transposed);
+                logger << "[LM::build][Quant] int short " << Logger::endc;
+            }else{
+                handler = new QuantPartlyTransposedDAHandler<int,int>(transposed);
+                logger << "[LM::build][Quant] int int " << Logger::endc;
+            }
+        }
     }else{
         logger << "[LM::build] DALM unknown type." << Logger::endc;
         throw "type error";
@@ -145,6 +199,61 @@ void LM::readParams(BinaryFileReader &reader, unsigned char order){
         handler = new EmbeddedDAHandler(reader, order, logger);
     }else if(v.get_opt() == DALM_OPT_BST){
         handler = new BstDAHandler(reader, order, logger);
+    }else if(v.get_opt()== DALM_OPT_PT){
+        handler = new PartlyTransposedDAHandler(reader, order, logger);
+    }else if(v.get_opt()== DALM_OPT_QPT){
+        reader >> DALM::QUANT_INFO::prob_bits;
+        reader >> DALM::QUANT_INFO::bow_bits;
+
+        int prob_bit = DALM::QUANT_INFO::prob_bits;
+        int bow_bit = DALM::QUANT_INFO::bow_bits;
+
+        for(int i = 0; i < DALM_MAX_ORDER-1; ++i){
+            DALM::QUANT_INFO::prob_bin[i].resize(1<<prob_bit, 0);
+            DALM::QUANT_INFO::bow_bin[i].resize(1<<bow_bit, 0);
+            reader.read_many(DALM::QUANT_INFO::prob_bin[i].data(), 1<<prob_bit);
+            reader.read_many(DALM::QUANT_INFO::bow_bin[i].data(), 1<<bow_bit);
+        }
+
+
+        QUANT_INFO::independent_left_mask = 1 << prob_bit;
+        QUANT_INFO::prob_mask = (1<<prob_bit)-1;
+
+
+        if(prob_bit < 8){
+            if(bow_bit < 9){
+                handler = new QuantPartlyTransposedDAHandler<char,char>(reader, order, logger);
+                logger << "[LM::build][Quant] char char " << Logger::endc;
+            }else if(bow_bit < 17){
+                handler = new QuantPartlyTransposedDAHandler<char,short>(reader, order, logger);
+                logger << "[LM::build][Quant] char short " << Logger::endc;
+            }else{
+                handler = new QuantPartlyTransposedDAHandler<char,int>(reader, order, logger);
+                logger << "[LM::build][Quant] char int " << Logger::endc;
+            }
+        }else if(prob_bit < 16){
+            if(bow_bit < 9){
+                handler = new QuantPartlyTransposedDAHandler<short,char>(reader, order, logger);
+                logger << "[LM::build][Quant] short char " << Logger::endc;
+            }else if(bow_bit < 17){
+                handler = new QuantPartlyTransposedDAHandler<short,short>(reader, order, logger);
+                logger << "[LM::build][Quant] short short " << Logger::endc;
+            }else{
+                handler = new QuantPartlyTransposedDAHandler<short,int>(reader, order, logger);
+                logger << "[LM::build][Quant] short int " << Logger::endc;
+            }
+        }else{
+            if(bow_bit < 9){
+                handler = new QuantPartlyTransposedDAHandler<int,char>(reader, order, logger);
+                logger << "[LM::build][Quant] int char " << Logger::endc;
+            }else if(bow_bit < 17){
+                handler = new QuantPartlyTransposedDAHandler<int,short>(reader, order, logger);
+                logger << "[LM::build][Quant] int short " << Logger::endc;
+            }else{
+                handler = new QuantPartlyTransposedDAHandler<int,int>(reader, order, logger);
+                logger << "[LM::build][Quant] int int " << Logger::endc;
+            }
+        }
     }else{
         logger << "[LM::build] DALM unknown type." << Logger::endc;
         throw "type error";

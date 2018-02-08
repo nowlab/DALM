@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sstream>
+#include <memory>
+#include <vector>
 #include <errno.h>
 
 #define DALM_BUFFER_SIZE 10000
@@ -42,9 +44,23 @@ namespace DALM{
             read_or_die(target, sizeof(T), n);
         }
 
+        template <typename T>
+        void read_many(std::vector<T> &target, std::size_t n){
+            target.resize(n);
+            read_or_die(target, sizeof(T), n);
+        }
+
     private:
         void read_or_die(void *target, std::size_t size, std::size_t n){
             std::size_t n_read = std::fread(target, size, n, fp_);
+            if(n_read < n){
+                throw std::runtime_error("File read error.");
+            }
+        }
+
+        template <typename T>
+        void read_or_die(std::vector<T> &target, std::size_t size, std::size_t n){
+            std::size_t n_read = std::fread(target.data(), size, n, fp_);
             if(n_read < n){
                 throw std::runtime_error("File read error.");
             }

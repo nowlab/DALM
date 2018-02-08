@@ -15,9 +15,9 @@ add_subdirectory(tests/gtest)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_definitions(-DDALM_MAX_ORDER=6)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -fPIC")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -flto")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pg -fPIC -std=c++11 ")
+set(CMAKE_CXX_FLAGS_DEBUG " -O0 ")
+set(CMAKE_CXX_FLAGS_RELEASE " -O3 -flto ")
 include_directories("externals")
 include_directories(${PROJECT_BINARY_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
@@ -30,9 +30,10 @@ set(HEADERS_MAIN
 
 set(HEADERS
     src/dalm/arpafile.h
-    src/dalm/buildutil.h
     src/dalm/da.h
     src/dalm/bst_da.h
+    src/dalm/pt_da.h
+    src/dalm/qpt_da.h
     src/dalm/embedded_da.h
     src/dalm/reverse_da.h
     src/dalm/fragment.h
@@ -49,6 +50,7 @@ set(HEADERS
     src/dalm/version.h
     src/dalm/vocabulary.h
     src/dalm/vocabulary_file.h
+    src/dalm/buildutil.h
     src/dalm/fileutil.h
     src/dalm/sortutil.h
     )
@@ -57,6 +59,8 @@ set(SOURCE_FILES
     ${HEADERS_MAIN}
     ${HEADERS}
     src/bst_da.cpp
+    src/pt_da.cpp
+    src/qpt_da.cpp
     src/embedded_da.cpp
     src/fragment.cpp
     src/dalm.cpp

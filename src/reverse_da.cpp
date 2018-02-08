@@ -6,11 +6,14 @@
 #include <utility>
 #include <limits>
 #include <cmath>
+#include <thread>
+#include <mutex>
 
 #include "dalm.h"
 #include "dalm/reverse_da.h"
 
 using namespace DALM;
+std::mutex ReverseDA::mtx;
 
 ReverseDA::ReverseDA(unsigned char daid, unsigned char datotal, ReverseDA **neighbours, Logger &logger)
     : daid_(daid), datotal_(datotal), da_(neighbours), logger_(logger){
@@ -50,6 +53,7 @@ void ReverseDA::fill_inserted_node(std::string &pathtotreefile, Vocabulary &voca
     std::size_t tenpercent = n_entries / 10;
     for(size_t i = 0; i < n_entries; i++){
         if((i+1) % tenpercent == 0){
+            std::lock_guard<std::mutex> g {mtx};
             logger_ << "ReverseDA[" << daid_ << "][fill] " << (i+1)/tenpercent << "0% done." << Logger::endi;
         }
 
@@ -163,12 +167,16 @@ void ReverseDA::make_da(std::string &pathtotreefile, ValueArrayIndex *, Vocabula
     int max_slot = 0;
 
     std::size_t n_entries = file.size();
-    logger_ << "ReverseDA[" << daid_ << "] n_entries=" << n_entries << Logger::endi;
-    logger_ << "ReverseDA[" << daid_ << "] n_unigram=" << n_unigram << Logger::endi;
+    {
+        std::lock_guard<std::mutex> g {mtx};
+        logger_ << "ReverseDA[" << daid_ << "] n_entries=" << n_entries << Logger::endi;
+        logger_ << "ReverseDA[" << daid_ << "] n_unigram=" << n_unigram << Logger::endi;
+    }
 
     std::size_t tenpercent = n_entries / 10;
     for(size_t i = 0; i < n_entries; i++){
         if((i+1) % tenpercent == 0){
+            std::lock_guard<std::mutex> g {mtx};
             logger_ << "ReverseDA[" << daid_ << "] " << (i+1)/tenpercent << "0% done." << Logger::endi;
         }
 
@@ -183,8 +191,8 @@ void ReverseDA::make_da(std::string &pathtotreefile, ValueArrayIndex *, Vocabula
                 context = traverse(history[j], context);
             }
             assert(n_history == 0 || has_endmarker);
-            det_base(children, node_prob, node_bow, n_children, context, values, n_slot_used, head, max_slot, validate,
-                     words_prefix, prefix_length);
+            det_base(children, node_prob, node_bow, n_children, context, values, n_slot_used,
+                      head, max_slot, validate, words_prefix, prefix_length);
             if(node_bow.logbow > bow_max_){
                 bow_max_ = node_bow.logbow;
             }
@@ -235,8 +243,10 @@ void ReverseDA::make_da(std::string &pathtotreefile, ValueArrayIndex *, Vocabula
     delete [] history;
     delete [] children;
     delete [] values;
-
-    logger_ << "ReverseDA[" << daid_ << "] array_size=" << array_size_ << " n_slot_used=" << n_slot_used << Logger::endi;
+    {
+        std::lock_guard<std::mutex> g {mtx};
+        logger_ << "ReverseDA[" << daid_ << "] array_size=" << array_size_ << " n_slot_used=" << n_slot_used << Logger::endi;
+    }
 }
 
 void ReverseDA::fit_to_size(int max_slot) {

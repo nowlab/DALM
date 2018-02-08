@@ -36,7 +36,7 @@ DALM::Model *build_dalm_for_test(std::string suffix, std::string mode, DALM::Log
         remove(outdir.c_str());
     }
 
-    build_dalm(outdir, arpa, mode, n_div, 0, 1024*1024, logger);
+    build_dalm(outdir, arpa, mode, n_div, 0, 1024*1024, logger, 1000, 31, 32);
 
     DALM::Model *lm = new DALM::Model(outdir, logger);
 

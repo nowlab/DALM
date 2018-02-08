@@ -48,6 +48,16 @@ namespace DALM{
     typedef struct {
         int base;
         int check;
+    } DASimple;
+
+    typedef struct {
+        float logp;
+        float bow;
+    } DAVal;
+
+    typedef struct {
+        int base;
+        int check;
         float logprob;
         float logbow;
     } DABody;
