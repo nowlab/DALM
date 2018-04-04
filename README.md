@@ -1,8 +1,10 @@
-# DALM
+# PTDALM
 <http://www.jnory.com/research/dalm>
 
-This is an implementation of the double-array language model (DALM).
+This is an implementation of the partly transposed double-array language model (PTDALM).
 This method is described on:
+> 竹中孝介, 芳賀駿平, 山本幹雄. 2017. 部分転置ダブル配列を用いたngram言語モデルの実装, 第23回言語処理学会年次大会
+
 > Makoto Yasuhara, Toru Tanaka, Jun-ya Norimatsu, Mikio Yamamoto. 2013. An Efficient Language Model Using Double-Array Structures. In Proceedings of the 2013 Conference on Empirical Methods in Natural Language Processing.
 
 * Paper : <http://www.aclweb.org/anthology/D13-1023>
@@ -34,9 +36,17 @@ This script generates following files into [Output Directory]:
 * words.bin : binary dumps of vocabulary data.
 * words.txt : a set of words of the model.
 
+### Building a PTDALM model
+To build PTDALM, set `-m pt` to the build option.  
+By default, number of transposed nodes set to `1000`.  
+If you want to change, please set `-t [NUMBER OF TRANSPOSED]` to the option.  
+ex:)  
+> [install dir]/bin/build_dalm -f method -f [path to lm] -o [path to output] -d #div -c #cores  -m pt -t 10000
+
 ### Building a DALM model in parallel
 By default, build_dalm.sh uses 4 cores in your CPU.
 If you have 4 cores and you want to use only 3, please set `-c 3` to the option.
+
 
 ### Using DALM on your system
 We include a sample program to use DALM on your system.
