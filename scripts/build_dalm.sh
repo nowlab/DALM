@@ -24,7 +24,7 @@ WORDDICT=$OUTPUT/$WORDDICTFN
 INI=$OUTPUT/dalm.ini
 
 SCRIPTS=`dirname $0`
-BIN=$SCRIPTS/../bin
+BIN=$SCRIPTS/../nbin
 MKWORDDICT=$BIN/mkworddict
 MKTREEFILE="ruby $SCRIPTS/mktreefile.rb"
 
@@ -33,16 +33,24 @@ BUILDER=$BIN/dalm_builder
 if [ ! -d $OUTPUT ]; then
 	mkdir -p $OUTPUT
 else
-	echo "$OUTPUT already exists. exit."
-	exit 1
+	echo "$OUTPUT already exists."
+#	exit 1
 fi
 
 echo "MKWORDDICT : `date`"
-$MKWORDDICT $ARPA $WORDDICT $WORDIDS
+if [ -e $WORDDICT ] && [ -e $WORDIDS ]; then
+  echo $WORDDICT and $WORDIDS are already exists.
+else
+  $MKWORDDICT $ARPA $WORDDICT $WORDIDS
+fi
 
 if [ "$OPTMETHOD" = "embedding" ]; then
-    echo "MKTREEFILE : `date`"
-	$MKTREEFILE $ARPA $TREE
+  echo "MKTREEFILE : `date`"
+  if [ -e $TREE ]; then
+    echo $TREE is already exists.
+  else
+	  $MKTREEFILE $ARPA $TREE
+  fi
 fi
 
 echo "DALM_BUILDER : `date`"
@@ -57,11 +65,11 @@ echo "WORDS=$WORDBINFN" >> $INI
 echo "ARPA=`basename $ARPA`" >> $INI
 echo "WORDSTXT=$WORDDICTFN" >> $INI
 
-if [ "$OPTMETHOD" = "embedding" ]; then
-       echo "CLEANING A TREE FILE : `date`"
-       rm $TREE
-fi
-echo "CLEANING A WORDID FILE : `date`"
-rm $WORDIDS
+#if [ "$OPTMETHOD" = "embedding" ]; then
+#       echo "CLEANING A TREE FILE : `date`"
+#       rm $TREE
+#fi
+#echo "CLEANING A WORDID FILE : `date`"
+#rm $WORDIDS
 
 echo "DONE : `date`"

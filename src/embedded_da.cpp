@@ -11,13 +11,15 @@
 #include "value_array.h"
 #include "value_array_index.h"
 
+#include <x86intrin.h>
+
 using namespace DALM;
 
 EmbeddedDA::EmbeddedDA(
 		unsigned char daid, 
 		unsigned char datotal, 
-		ValueArray &value_array, 
-		EmbeddedDA **neighbours, 
+		ValueArray &value_array,
+		EmbeddedDA **neighbours,
 		Logger &logger)
 		: daid(daid), 
 			datotal(datotal), 
@@ -532,7 +534,7 @@ void EmbeddedDA::replace_value()
 	}
 }
 
-void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){ 
+void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 	unsigned *pos = new unsigned[amount];
 	unsigned minindex = 0;
 	unsigned maxindex = 0;
@@ -551,21 +553,55 @@ void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 		base-=da_array[base+word[minindex]].check.check_val;
 	}
 
-	unsigned k=0; 
-	while(k < amount){
-		pos[k]=base+word[k];
+	// TODO: Comparison of XCHECK
+	if (not NewXcheck) { // Legacy
+		unsigned k=0;
+		while(k < amount){
+			pos[k]=base+word[k];
 
-		if(pos[k] < array_size && da_array[pos[k]].check.check_val>=0){
-			base-=da_array[base+word[minindex]].check.check_val;
-			k=0;
-		}else{
-			k++;
+			if(pos[k] < array_size && da_array[pos[k]].check.check_val>=0){
+				base-=da_array[base+word[minindex]].check.check_val;
+				k=0;
+			}else{
+				k++;
+			}
 		}
+	} else { // New
+		for (size_t target_front = base; ; ) {
+			uint64_t bits = -1ull;
+			size_t i = 0;
+			for (; i < amount; i++) {
+				bits &= empty_element_bits.bits64_from(target_front + word[i]);
+				if (bits == 0) // Failure
+					break;
+			}
+			if (i == amount) { // Success
+				assert(bits != 0);
+				base = target_front + _tzcnt_u64(bits);
+				for (size_t i = 0; i < amount; i++) {
+					pos[i] = base+word[i];
+				}
+				break;
+			}
+			if (not EL) {
+				target_front += 64;
+			} else {
+				size_t clz = _lzcnt_u64(empty_element_bits.bits64_from(target_front + word[minindex]));
+				assert(clz < 64);
+				size_t trailing_index = target_front + word[minindex] + (63-clz);
+				assert(da_array[trailing_index].check.check_val < 0);
+				long long distance = -da_array[trailing_index].check.check_val;
+				target_front = trailing_index + distance - word[minindex];
+			}
+		}
+	}
+	for (int i = 0; i < amount; i++) {
+		assert(da_array[base + word[i]].check.check_val < 0);
 	}
 
 	da_array[now].base.base_val=base;
 
-	unsigned max_jump = base + word[maxindex]+1;   
+	unsigned max_jump = base + word[maxindex]+1;
 	if(max_jump > array_size){
 		resize_array(array_size*2 > max_jump ? array_size*2 : max_jump*2 );
 	}
@@ -585,10 +621,14 @@ void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 		}
 
 		da_array[pos[i]].check.check_val=now;
+		// TODO:
+		if (NewXcheck)
+			empty_element_bits[pos[i]] = false;
+
 		if(val!=NULL) da_array[pos[i]].base.logprob = val[i];
 	}
 
-	if(max_index < pos[maxindex]){ 
+	if(max_index < pos[maxindex]){
 		max_index=pos[maxindex];
 	}
 
@@ -629,8 +669,13 @@ void EmbeddedDA::resize_array(unsigned newarray_size){
 	memset(da_array+array_size,0xFF,(newarray_size-array_size)*sizeof(DAPair));
 	memset(value_id+array_size,0xFF,(newarray_size-array_size)*sizeof(int));
 
+	// TODO:
+	if (NewXcheck)
+	  empty_element_bits.resize(newarray_size, true);
+
 	array_size = newarray_size;
 }
+
 
 bool EmbeddedDA::prob_check(int length, int order, unsigned int *ngram, float prob){
 	int pos=0;

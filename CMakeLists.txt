@@ -4,8 +4,13 @@ project(dalm)
 enable_testing()
 
 add_definitions(-DDALM_MAX_ORDER=6)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -mlzcnt")
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+message(STATUS "CMAKE_CXX_STANDARD is " ${CMAKE_CXX_STANDARD})
+message(STATUS "CMAKE_BUILD_TYPE is " ${CMAKE_BUILD_TYPE})
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3")
 include_directories("include")
 include_directories("darts-clone")
 
@@ -49,7 +54,7 @@ target_link_libraries(
     mkworddict
     dalm
     pthread
-    SegFault
+#    SegFault
 )
 
 add_executable(query_sample sample/query_sample.cpp)
@@ -57,7 +62,7 @@ target_link_libraries(
     query_sample
     dalm
     pthread
-    SegFault
+#    SegFault
 )
 
 add_executable(query_with_state_sample sample/query_with_state_sample.cpp)
@@ -65,7 +70,7 @@ target_link_libraries(
     query_with_state_sample
     dalm
     pthread
-    SegFault
+#    SegFault
 )
 
 add_executable(dalm_builder src/builder.cpp)
@@ -73,7 +78,7 @@ target_link_libraries(
     dalm_builder
     dalm
     pthread
-    SegFault
+#    SegFault
 )
 
 INSTALL(TARGETS dalm ARCHIVE DESTINATION lib)

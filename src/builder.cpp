@@ -12,15 +12,28 @@
 using namespace std;
 
 void build_DALM(int argc, char **argv, DALM::Logger &logger){
-	char *opt = argv[1];
-	char *arpa = argv[2];
-	char *tree = argv[3];
-	char *worddict = argv[4];
-	char *wids = argv[5];
-	char *binmodel = argv[6];
-	char *binwdict = argv[7];
-	size_t dividenum = atoi(argv[8]);
-	
+#ifdef NDEBUG
+    const char *opt = argv[1];
+    const char *arpa = argv[2];
+    const char *tree = argv[3];
+    const char *worddict = argv[4];
+    const char *wids = argv[5];
+    const char *binmodel = argv[6];
+    const char *binwdict = argv[7];
+    size_t dividenum = atoi(argv[8]);
+#else
+    const char *opt = "embedding";
+    const char *arpa = "../../../wikipedia_dump/enwiki-20190901-articles1-3gram.arpa";
+    std::string dir = "../../../wikipedia_dump/3gram-new0";
+    std::string base = "enwiki-20190901-articles1-3gram";
+    std::string tree = (std::string(dir) + "/" + base + ".arpa.tree.txt");
+    std::string worddict = (std::string(dir) + "/words.txt");
+    std::string wids = (std::string(dir) + "/" + base + ".arpa.wordids.txt");
+    std::string binmodel = (std::string(dir) + "/dalm.bin");
+    std::string binwdict = (std::string(dir) + "/words.bin");
+    size_t dividenum = 1;
+#endif
+  
 	unsigned int method=DALM_OPT_UNDEFINED;
 	
 	string optmethod(opt);
@@ -28,7 +41,7 @@ void build_DALM(int argc, char **argv, DALM::Logger &logger){
 		method = DALM_OPT_EMBEDDING;
 	}
 	
-	logger << "Building vocabfile." << DALM::Logger::endi;	
+	logger << "Building vocabfile." << DALM::Logger::endi;
 	DALM::Vocabulary *vocab = new DALM::Vocabulary(string(worddict), string(binwdict), string(wids), 0, logger);
 
 	logger << "Building DALM." << DALM::Logger::endi;
@@ -44,11 +57,13 @@ void build_DALM(int argc, char **argv, DALM::Logger &logger){
 }
 
 int main(int argc, char **argv){
+#ifdef NDEBUG
 	if(argc != 9){
 		cout << "Usage: " << argv[0] << " optmethod dumped-arpa-file dumped-tree-file worddict word-id-file output-binmodel output-binworddict divide-number" << endl;
 		cout << " optmethod=embedding" << endl;
 		return 1;
 	}
+#endif
 
 	srand(432341);
 	DALM::Logger logger(stderr);
