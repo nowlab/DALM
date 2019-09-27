@@ -8,11 +8,10 @@
 #include <utility>
 #include <fileutil.h>
 
-#include <x86intrin.h>
-
 #include "treefile.h"
 #include "value_array.h"
 #include "value_array_index.h"
+#include "bit_util.h"
 
 using namespace DALM;
 
@@ -578,7 +577,7 @@ void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 #  ifndef DALM_EL_SKIP
 				base += 64;
 #  else
-				size_t clz = _lzcnt_u64(empty_element_bits.bits64_from(base + word[minindex]));
+				size_t clz = bit_util::clz(empty_element_bits.bits64_from(base + word[minindex]));
 				size_t trailing_index = base + word[minindex] + (63 - clz);
 				assert(da_array[trailing_index].check.check_val < 0);
 				long long distance = -da_array[trailing_index].check.check_val;
@@ -590,7 +589,7 @@ void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 				i++;
 			}
 		}
-		base += (int)_tzcnt_u64(bits);
+		base += (int) bit_util::ctz(bits);
 		for (size_t i = 0; i < amount; i++) {
 			pos[i] = base + word[i];
 		}
