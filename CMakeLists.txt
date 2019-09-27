@@ -4,7 +4,7 @@ project(dalm)
 enable_testing()
 
 add_definitions(-DDALM_MAX_ORDER=6)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -mlzcnt")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -march=native")
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()

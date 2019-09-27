@@ -554,41 +554,45 @@ void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 	}
 	// TODO: Comparison of XCHECK
 #ifndef DALM_NEW_XCHECK
-	unsigned k=0;
-	while(k < amount){
-		check_counts_++;
-		pos[i]=base+word[k];
-		if(pos[i] < array_size && da_array[pos[i]].check.check_val>=0){
-			base-=da_array[base+word[minindex]].check.check_val;
-			k=0;
-		}else{
-			k++;
+	{
+		unsigned k=0;
+		while(k < amount){
+			check_counts_++;
+			pos[k]=base+word[k];
+			if(pos[k] < array_size && da_array[pos[k]].check.check_val>=0){
+				base-=da_array[base+word[minindex]].check.check_val;
+				k=0;
+			}else{
+				k++;
+			}
 		}
 	}
 #else
-	uint64_t bits = -1ull;
-	for (size_t i = 0; i < amount; ) {
-		check_counts_++;
-		bits &= empty_element_bits.bits64_from(base + word[i]);
-		if (bits == 0) {
+	{
+		uint64_t bits = -1ull;
+		for (size_t i = 0; i < amount;) {
+			check_counts_++;
+			bits &= empty_element_bits.bits64_from(base + word[i]);
+			if (bits == 0) {
 #  ifndef DALM_EL_SKIP
-			base += 64;
+				base += 64;
 #  else
-			size_t clz = _lzcnt_u64(empty_element_bits.bits64_from(base + word[minindex]));
-			size_t trailing_index = base + word[minindex] + (63-clz);
-			assert(da_array[trailing_index].check.check_val < 0);
-			long long distance = -da_array[trailing_index].check.check_val;
-			base += (63-clz) + distance;
+				size_t clz = _lzcnt_u64(empty_element_bits.bits64_from(base + word[minindex]));
+				size_t trailing_index = base + word[minindex] + (63 - clz);
+				assert(da_array[trailing_index].check.check_val < 0);
+				long long distance = -da_array[trailing_index].check.check_val;
+				base += (63 - clz) + distance;
 #  endif
-			bits = -1ull;
-			i = 0;
-		} else {
-			i++;
+				bits = -1ull;
+				i = 0;
+			} else {
+				i++;
+			}
 		}
-	}
-	base += _tzcnt_u64(bits);
-	for (size_t i = 0; i < amount; i++) {
-		pos[i] = base+word[i];
+		base += _tzcnt_u64(bits);
+		for (size_t i = 0; i < amount; i++) {
+			pos[i] = base + word[i];
+		}
 	}
 #endif
 
