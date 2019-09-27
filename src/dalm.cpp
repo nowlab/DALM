@@ -1,10 +1,11 @@
+#include "dalm.h"
+
 #include <cmath>
 
-#include <stdint.h>
+#include <cstdint>
 #include <unistd.h>
 #include <vector>
 
-#include "dalm.h"
 #include "arpafile.h"
 #include "version.h"
 #include "pthread_wrapper.h"

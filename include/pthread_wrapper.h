@@ -2,7 +2,7 @@
 #define PTHREADWRAPPER_H_
 
 #include <pthread.h>
-
+#include <vector>
 #include <fstream>
 
 #if defined(__linux__)

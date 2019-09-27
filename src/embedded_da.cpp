@@ -1,17 +1,18 @@
+#include "da.h"
+
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-#include <limits.h>
+#include <climits>
 
 #include <utility>
 #include <fileutil.h>
 
+#include <x86intrin.h>
+
 #include "treefile.h"
-#include "da.h"
 #include "value_array.h"
 #include "value_array_index.h"
-
-#include <x86intrin.h>
 
 using namespace DALM;
 
@@ -589,7 +590,7 @@ void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 				i++;
 			}
 		}
-		base += _tzcnt_u64(bits);
+		base += (int)_tzcnt_u64(bits);
 		for (size_t i = 0; i < amount; i++) {
 			pos[i] = base + word[i];
 		}
