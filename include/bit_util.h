@@ -11,7 +11,7 @@ namespace DALM::bit_util {
 
 // ctz (Count trailing zeros) (***10000 = 4)
 
-unsigned long long ctz(unsigned long long x) {
+inline unsigned long long ctz(unsigned long long x) {
 #ifdef __BMI__
 	return _tzcnt_u64(x);
 #elif defined(__POPCNT__)
@@ -51,7 +51,7 @@ unsigned long long ctz(unsigned long long x) {
 
 // clz (Count leading zeros) (00001*** = 4)
 
-unsigned long long clz(unsigned long long x) {
+inline unsigned long long clz(unsigned long long x) {
 #ifdef __LZCNT__
 	return _lzcnt_u64(x);
 #elif defined(__POPCNT__)
