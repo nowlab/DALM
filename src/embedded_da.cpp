@@ -577,11 +577,11 @@ void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 #  ifndef DALM_EL_SKIP
 				base += 64;
 #  else
-				size_t clz = bit_util::clz(empty_element_bits.bits64_from(base + word[minindex]));
-				size_t trailing_index = base + word[minindex] + (63 - clz);
+				int trailing_insets = 63 - (int)bit_util::clz(empty_element_bits.bits64_from(base + word[minindex]));
+				int trailing_index = base + word[minindex] + trailing_insets;
 				assert(da_array[trailing_index].check.check_val < 0);
-				long long distance = -da_array[trailing_index].check.check_val;
-				base += (63 - clz) + distance;
+				int distance = -da_array[trailing_index].check.check_val;
+				base += trailing_insets + distance;
 #  endif
 				bits = -1ull;
 				i = 0;

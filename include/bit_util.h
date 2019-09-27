@@ -61,7 +61,7 @@ unsigned long long clz(unsigned long long x) {
     x |= x >> 8;
     x |= x >> 16;
     x |= x >> 32;
-    return popcnt64(~x);
+    return _mm_popcnt_u64(~x);
 #else
     // Reference to http://www.nminoru.jp/~nminoru/programming/bitcount.html#leading-0bits
     if (x == 0)
