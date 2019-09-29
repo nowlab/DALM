@@ -40,7 +40,7 @@ BUILDER=$BIN/dalm_builder
 if [ ! -d $OUTPUT ]; then
 	mkdir -p $OUTPUT
 else
-	echo "$OUTPUT already exists."
+	echo "$OUTPUT is already exists."
 #	exit 1
 fi
 
@@ -56,7 +56,7 @@ if [ "$OPTMETHOD" = "embedding" ]; then
   if [ -e $TREE ]; then
     echo $TREE is already exists.
   else
-	  $MKTREEFILE $ARPA $TREE
+	$MKTREEFILE $ARPA $TREE
   fi
 fi
 
