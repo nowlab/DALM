@@ -119,7 +119,8 @@ namespace DALM{
 
 			Logger &logger;
 
-	        size_t check_counts_=0;
+	        size_t loop_counts_=0;
+			size_t skip_counts_=0;
 #ifdef DALM_NEW_XCHECK
             // Additional bit array
             template <bool DefaultBit>

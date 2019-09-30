@@ -7,6 +7,7 @@
 
 #include <utility>
 #include <fileutil.h>
+#include <chrono>
 
 #include "treefile.h"
 #include "value_array.h"
@@ -84,9 +85,13 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 
 	size_t tenpercent = total / 10;
 
+	using hrc = std::chrono::high_resolution_clock;
+	auto start = hrc::now();
+
 	for(size_t i = 0; i < total; i++){
 		if((i+1) % tenpercent == 0){
-			logger << "EmbeddedDA[" << daid << "] " << (i+1)/tenpercent << "0% done. " << check_counts_ << " s checked." << Logger::endi;
+			auto sec = std::chrono::duration<double>(hrc::now() - start).count();
+			logger << "EmbeddedDA[" << daid << "] " << (i+1)/tenpercent << "0% done. " << sec << " sec. " << loop_counts_ << " s checked, " << skip_counts_ << " s skipped." << Logger::endi;
 		}
 
 		unsigned short n;
@@ -148,6 +153,8 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 			value_id[terminal] = value_array_index->lookup(values[terminal_pos]);
 		}
 	}
+
+	logger << "EmbeddedDA[" << daid << "] " << "Total construction time is " << std::chrono::duration<double>(hrc::now() - start).count() << " seconds." << Logger::endi;
 
 	replace_value();
 	delete [] history;
@@ -557,9 +564,10 @@ void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 	{
 		unsigned k=0;
 		while(k < amount){
-			check_counts_++;
+			loop_counts_++;
 			pos[k]=base+word[k];
 			if(pos[k] < array_size && da_array[pos[k]].check.check_val>=0){
+				skip_counts_++;
 				base-=da_array[base+word[minindex]].check.check_val;
 				k=0;
 			}else{
@@ -571,9 +579,10 @@ void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 	{
 		uint64_t bits = -1ull;
 		for (size_t i = 0; i < amount;) {
-			check_counts_++;
+			loop_counts_++;
 			bits &= empty_element_bits.bits64_from(base + word[i]);
 			if (bits == 0) {
+				skip_counts_++;
 #  ifndef DALM_EL_SKIP
 				base += 64;
 #  else
