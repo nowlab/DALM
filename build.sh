@@ -1,27 +1,27 @@
 #!/bin/sh
 
-DIR=$(dirname $0)
+cd $(dirname $0)
 
-if [ ! -e $DIR/bin ]; then
-    mkdir $DIR/bin
+if [ ! -e bin ]; then
+    mkdir bin
 fi
-cd $DIR/bin
+cd bin
 cmake -DDALM_NEW_XCHECK=OFF -DDALM_EL_SKIP=OFF -G Ninja ..
 cmake --build .
 cd ..
 
-if [ ! -e $DIR/nbin ]; then
-    mkdir $DIR/nbin
+if [ ! -e nbin ]; then
+    mkdir nbin
 fi
-cd $DIR/nbin
+cd nbin
 cmake -DDALM_NEW_XCHECK=ON -DDALM_EL_SKIP=OFF -G Ninja ..
 cmake --build .
 cd ..
 
-if [ ! -e $DIR/n1bin ]; then
-    mkdir $DIR/n1bin
+if [ ! -e n1bin ]; then
+    mkdir n1bin
 fi
-cd $DIR/n1bin
+cd n1bin
 cmake -DDALM_NEW_XCHECK=ON -DDALM_EL_SKIP=ON -G Ninja ..
 cmake --build .
 cd ..
