@@ -57,7 +57,7 @@ def puts_inserted(fpout, inserted)
 	end
 end
 
-system("LC_ALL=C sort #{output}.tmp > #{output}.tmp2")
+system("LC_ALL=C sort -S 40% #{output}.tmp > #{output}.tmp2")
 system("LC_ALL=C rm #{output}.tmp")
 
 open("#{output}.tmp2","r:ASCII-8BIT"){|fp|
@@ -108,7 +108,7 @@ open("#{output}.tmp2","r:ASCII-8BIT"){|fp|
 }
 
 system("LC_ALL=C rm #{output}.tmp2")
-system("LC_ALL=C sort #{output}.tmp3 > #{output}.tmp4")
+system("LC_ALL=C sort -S 40% #{output}.tmp3 > #{output}.tmp4")
 system("LC_ALL=C rm #{output}.tmp3")
 
 open("#{output}.tmp4","r:ASCII-8BIT"){|fp|
@@ -164,7 +164,7 @@ open(output, "w:ASCII-8BIT"){|fp|
 	fp.puts "\\n-grams:"
 }
 
-system("LC_ALL=C sort #{output}.tmp5 | LC_ALL=C sed -e 's/\x01 //g' >> #{output}")
+system("LC_ALL=C sort -S 40% #{output}.tmp5 | LC_ALL=C sed -e 's/\x01 //g' >> #{output}")
 system("LC_ALL=C rm #{output}.tmp5")
 
 open(output,"a:ASCII-8BIT"){|fp|
