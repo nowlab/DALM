@@ -53,10 +53,12 @@ fi
 
 if [ "$OPTMETHOD" = "embedding" ]; then
   echo "MKTREEFILE : `date`"
-  if [ -e $TREE ]; then
+  if [ -e ${TREE}.zst ]; then
     echo $TREE is already exists.
+    pzstd -d ${TREE}.zst
   else
 	$MKTREEFILE $ARPA $TREE
+    pzstd ${TREE}
   fi
 fi
 
@@ -72,10 +74,10 @@ echo "WORDS=$WORDBINFN" >> $INI
 echo "ARPA=`basename $ARPA`" >> $INI
 echo "WORDSTXT=$WORDDICTFN" >> $INI
 
-#if [ "$OPTMETHOD" = "embedding" ]; then
-#       echo "CLEANING A TREE FILE : `date`"
-#       rm $TREE
-#fi
+if [ "$OPTMETHOD" = "embedding" ]; then
+       echo "CLEANING A TREE FILE : `date`"
+       rm $TREE
+fi
 #echo "CLEANING A WORDID FILE : `date`"
 #rm $WORDIDS
 
