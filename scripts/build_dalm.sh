@@ -33,7 +33,7 @@ elif [ $BUILD_TYPE = 2 ]; then
   BIN=$SCRIPTS/../n1bin
 fi
 MKWORDDICT=$BIN/mkworddict
-MKTREEFILE="ruby $SCRIPTS/mktreefile.rb"
+MKTREEFILE="$SCRIPTS/mktreefile.sh"
 
 BUILDER=$BIN/dalm_builder
 
