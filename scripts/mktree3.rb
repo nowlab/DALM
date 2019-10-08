@@ -12,9 +12,9 @@ end
 order = ARGV.shift.to_i
 output = ARGV.shift
 
-ngramnums = Array.new(order, 0)
+ngramnums = Array.new(order+1, 0)
 
-open("#{output}.tmp", "w:ASCII-8BIT"){|fpout|
+open("#{output}.tmp", "w:ASCII-8BIT"){|fp|
     ngram_prev = []
     value_prev = nil
     while gets
@@ -24,9 +24,9 @@ open("#{output}.tmp", "w:ASCII-8BIT"){|fpout|
 
 	    if ngram_prev.size > 2 and ngram_prev[-2]=="<#>" and ngram_prev[-1]=="\x01<#>"
 	    	if ngram_prev.size == ngram.size and ngram_prev[0...-1]==ngram[0...-1]
-	    		fpout.puts "#{ngram_prev[1...-1].join(" ")} \x01 #{ngram_prev[0]}\t#{value_prev}"
+	    		fp.puts "#{ngram_prev[1...-1].join(" ")} \x01 #{ngram_prev[0]}\t#{value_prev}"
 	    	else
-		    	fpout.puts "#{ngram_prev[1...-1].join(" ")} \x01 #{ngram_prev[0]}\t#{-value_prev.to_f}"
+		    	fp.puts "#{ngram_prev[1...-1].join(" ")} \x01 #{ngram_prev[0]}\t#{-value_prev.to_f}"
 	    	end
 		    ngramnums[ngram_prev.size-2]+=1
     	elsif ngram_prev.size > 1 and ngram_prev[-2]=="<#>" and value_prev.nil?
@@ -34,7 +34,7 @@ open("#{output}.tmp", "w:ASCII-8BIT"){|fpout|
 	    elsif ngram_prev.size > 0
 	    	ngram_back = ngram_prev[-1]
 	    	ngram_prev[-1]="\x01 #{ngram_back}"
-	    	fpout.puts "#{ngram_prev.join(" ")}\t#{value_prev}"
+	    	fp.puts "#{ngram_prev.join(" ")}\t#{value_prev}"
 	    	ngramnums[ngram_prev.size-1]+=1
     	end
 
@@ -43,14 +43,14 @@ open("#{output}.tmp", "w:ASCII-8BIT"){|fpout|
     end
 
     if ngram_prev.size > 2 and ngram_prev[-2]=="<#>" and ngram_prev[-1]=="\x01<#>"
-    	fpout.puts "#{ngram_prev[1...-1].join(" ")} \x01 #{ngram_prev[0]}\t#{-value_prev.to_f}"
+    	fp.puts "#{ngram_prev[1...-1].join(" ")} \x01 #{ngram_prev[0]}\t#{-value_prev.to_f}"
     	ngramnums[ngram_prev.size-2]+=1
     elsif ngram_prev.size > 1 and ngram_prev[-2]=="<#>" and value_prev.nil?
     	#remove
     elsif ngram_prev.size > 0
     	ngram_back = ngram_prev[-1]
     	ngram_prev[-1]="\x01 #{ngram_back}"
-    	fpout.puts "#{ngram_prev.join(" ")}\t#{value_prev}"
+    	fp.puts "#{ngram_prev.join(" ")}\t#{value_prev}"
     	ngramnums[ngram_prev.size-1]+=1
     end
 }
