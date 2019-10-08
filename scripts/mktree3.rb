@@ -3,20 +3,14 @@
 
 STDIN.set_encoding("ASCII-8BIT")
 
+require_relative 'common'
+
 if ARGV.size != 2
     $stderr.puts "Usage: #{__FILE__} order output-tree-file"
 end
 
 order = ARGV.shift.to_i
 output = ARGV.shift
-
-def puts_inserted(fpout, inserted)
-	if inserted[-1]=="<#>"
-        throw "Irregular ARPA file. Please check your cutoff parameter. B( #{inserted[0...-1].join(" ")} ) is not found, although ARPA has P( * | #{inserted[0...-1].join(" ")} )."
-	else
-		fpout.puts "#{inserted.join(" ")}\t"
-	end
-end
 
 ngramnums = Array.new(order, 0)
 

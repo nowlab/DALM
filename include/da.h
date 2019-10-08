@@ -74,26 +74,26 @@ namespace DALM{
 		public:
 			EmbeddedDA(unsigned char daid, unsigned char datotal, ValueArray &value_array, EmbeddedDA **neighbours, Logger &logger);
 			EmbeddedDA(BinaryFileReader &reader, ValueArray &value_array, EmbeddedDA **neighbours, unsigned char order, Logger &logger);
-			virtual ~EmbeddedDA();
+			~EmbeddedDA() override;
 
-			virtual void make_da(std::string &pathtotreefile, ValueArrayIndex *value_array_index, Vocabulary &vocab);
-			virtual void dump(FILE *fp);
+			void make_da(std::string &pathtotreefile, ValueArrayIndex *value_array_index, Vocabulary &vocab) override;
+			void dump(FILE *fp) override;
 
-			virtual float get_prob(VocabId *word, unsigned char order);
-			virtual float get_prob(VocabId word, State &state);
-			virtual float get_prob(VocabId word, State &state, Fragment &f);
-			virtual float get_prob(const Fragment &f, State &state, Gap &gap);
-			virtual float get_prob(const Fragment &fprev, State &state, Gap &gap, Fragment &fnew);
+			float get_prob(VocabId *word, unsigned char order) override;
+			float get_prob(VocabId word, State &state) override;
+			float get_prob(VocabId word, State &state, Fragment &f) override;
+			float get_prob(const Fragment &f, State &state, Gap &gap) override;
+			float get_prob(const Fragment &fprev, State &state, Gap &gap, Fragment &fnew) override;
 
-			virtual void init_state(VocabId *word, unsigned char order, State &state);
-			virtual void init_state(State &state, const State &state_prev, const Fragment *fragments, const Gap &gap);
+			void init_state(VocabId *word, unsigned char order, State &state) override;
+			void init_state(State &state, const State &state_prev, const Fragment *fragments, const Gap &gap) override;
 
 			/* depricated */
-			virtual unsigned long int get_state(VocabId *word, unsigned char order);
+			unsigned long int get_state(VocabId *word, unsigned char order) override;
 
-			virtual bool checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bool bow_presence);
+			bool checkinput(unsigned short n,unsigned int *ngram,float bow,float prob,bool bow_presence) override;
 
-			virtual float sum_bows(State &state, unsigned char begin, unsigned char end);
+			float sum_bows(State &state, unsigned char begin, unsigned char end) override;
 
 		private:
 			void det_base(int *word,float *val,unsigned amount,unsigned now);

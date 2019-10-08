@@ -24,6 +24,7 @@ while arpafp.gets
 	end
 end
 
+# Puts all paths as Backward-Suffix-Tree in dictionary order.
 tmpfp.puts "<#>\t"
 while arpafp.gets
 	$_.chomp!
@@ -60,6 +61,7 @@ end
 system("LC_ALL=C sort -S 40% #{output}.tmp > #{output}.tmp2")
 system("LC_ALL=C rm #{output}.tmp")
 
+# Puts all paths to each vertexes of BST.
 open("#{output}.tmp2","r:ASCII-8BIT"){|fp|
 	open("#{output}.tmp3","w:ASCII-8BIT"){|fpout|
 		ngram_prev=[]
@@ -111,6 +113,7 @@ system("LC_ALL=C rm #{output}.tmp2")
 system("LC_ALL=C sort -S 40% #{output}.tmp3 > #{output}.tmp4")
 system("LC_ALL=C rm #{output}.tmp3")
 
+# Set value used in BST for each vertexes.
 open("#{output}.tmp4","r:ASCII-8BIT"){|fp|
 	open("#{output}.tmp5","w:ASCII-8BIT"){|fpout|
 		ngram_prev = []
