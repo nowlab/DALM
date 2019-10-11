@@ -63,7 +63,7 @@ open(output, "w:ASCII-8BIT"){|fp|
 	fp.puts "\\n-grams:"
 }
 
-system("LC_ALL=C sort -S 40% #{output}.tmp | LC_ALL=C sed -e 's/\x01 //g' >> #{output}")
+system("LC_ALL=C sort -S 40% #{output}.tmp -T $(dirname #{output}.tmp) --compress-program=zstd | LC_ALL=C sed -e 's/\x01 //g' | pv >>#{output}")
 system("LC_ALL=C rm #{output}.tmp")
 
 open(output,"a:ASCII-8BIT"){|fp|
