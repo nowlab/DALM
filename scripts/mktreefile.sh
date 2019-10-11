@@ -14,7 +14,7 @@ echo "Create BST from $ARPA to $OUT for DALM as ${ORDER}-gram language models."
 MKTREE1="ruby ${CUR}/mktree1.rb"
 MKTREE2="ruby ${CUR}/mktree2.rb"
 MKTREE3="ruby ${CUR}/mktree3.rb ${ORDER} ${OUT}"
-SORT="sort -S 40% -T $(dirname ${OUT})"
+SORT="sort -S 40% -T $(dirname ${OUT}) --compress-program=zstd"
 
 echo "Generate all paths on BST."
 ${MKTREE1} <${ARPA} | pv >${OUT}.tmp1

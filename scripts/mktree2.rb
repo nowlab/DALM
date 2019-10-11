@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # coding: utf-8
 
 require_relative 'common'
@@ -10,35 +9,20 @@ while gets
 	ngram, value = $_.chomp.split("\t")
 
 	ngram=ngram.split
-	if ngram_prev.size < ngram.size
-		branch=ngram_prev.size
-		ngram_prev.each_with_index{|word,i|
-			if ngram[i]!=word
-				branch=i
-				break
-			end
-		}
-		
-		common_words = ngram_prev[0...branch]
-		(branch...(ngram.size-1)).each{|i|
-			inserted = common_words + ngram[branch..i]
-			puts_inserted(inserted)
-		}
-	else # ngram_prev.size >= ngram.size
-		branch = ngram.size
-		ngram.each_with_index{|word, i|
-			if ngram_prev[i]!=word
-				branch = i
-				break
-			end
-		}
-		
-		common_words = ngram[0...branch]
-		(branch...(ngram.size-1)).each{|i|
-			inserted = common_words + ngram[branch..i]
-			puts_inserted(inserted)
-		}
+	min_size = ngram.size < ngram_prev.size ? ngram.size : ngram_prev.size
+	branch = min_size
+	for i in 1..min_size do
+	    index = min_size-i
+	    if ngram[index] != ngram_prev[index]
+	        branch = index
+	    else
+	        break
+	    end
 	end
+    common_words = ngram[0...branch]
+    for i in branch...ngram.size-1 do
+        puts_inserted(common_words + ngram[branch..i])
+    end
 	if ngram.size > 1 and ngram[-2]=="<#>"
 		puts "#{ngram.join(" ")}\t"
 		puts "#{ngram[-1]} #{ngram[0...-1].join(" ")} \x01<#>\t#{value}"

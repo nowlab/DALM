@@ -1,9 +1,8 @@
-#!/usr/bin/env ruby
 # coding: utf-8
 
-STDIN.set_encoding("ASCII-8BIT")
-
 require_relative 'common'
+
+STDIN.set_encoding("ASCII-8BIT")
 
 if ARGV.size != 2
     $stderr.puts "Usage: #{__FILE__} order output-tree-file"
