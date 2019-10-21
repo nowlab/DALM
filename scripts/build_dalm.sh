@@ -44,25 +44,31 @@ else
 #	exit 1
 fi
 
-echo "MKWORDDICT : `date`"
 if [ -e ${WORDDICT}.bz2 ] && [ -e ${WORDIDS}.bz2 ]; then
-  echo $WORDDICT and $WORDIDS are already exists.
+  echo 'Zipped WORDDICT is already exists.'
+  echo "Unzipping... : `date`"
   bzip2 -dc ${WORDDICT}.bz2 >${WORDDICT}
   bzip2 -dc ${WORDIDS}.bz2 >${WORDIDS}
-else
+elif [ ! -e ${WORDDICT} ] || [ ! -e ${WORDIDS} ]; then 
+  echo "MKWORDDICT : `date`"
   $MKWORDDICT $ARPA $WORDDICT $WORDIDS
   bzip2 ${WORDDICT}
   bzip2 ${WORDIDS}
+else
+  echo 'WORDDICT is already exists'
 fi
 
 if [ "$OPTMETHOD" = "embedding" ]; then
-  echo "MKTREEFILE : `date`"
   if [ -e ${TREE}.bz2 ]; then
-    echo $TREE is already exists.
+    echo Zipped TREE is already exists.
+    echo "Unzipping... : `date`"
     bzip2 -dc ${TREE}.bz2 >${TREE}
-  else
+  elif [ ! -e ${TREE} ]; then
+    echo "MKTREEFILE : `date`"
 	$MKTREEFILE $ARPA $TREE
     bzip2 ${TREE}
+  else
+    echo TREE is already exists.
   fi
 fi
 
