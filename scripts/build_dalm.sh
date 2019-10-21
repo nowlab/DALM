@@ -45,20 +45,24 @@ else
 fi
 
 echo "MKWORDDICT : `date`"
-if [ -e $WORDDICT ] && [ -e $WORDIDS ]; then
+if [ -e ${WORDDICT}.bz2 ] && [ -e ${WORDIDS}.bz2 ]; then
   echo $WORDDICT and $WORDIDS are already exists.
+  bzip2 -dc ${WORDDICT}.bz2 >${WORDDICT}
+  bzip2 -dc ${WORDIDS}.bz2 >${WORDIDS}
 else
   $MKWORDDICT $ARPA $WORDDICT $WORDIDS
+  bzip2 ${WORDDICT}
+  bzip2 ${WORDIDS}
 fi
 
 if [ "$OPTMETHOD" = "embedding" ]; then
   echo "MKTREEFILE : `date`"
-  if [ -e ${TREE}.zst ]; then
+  if [ -e ${TREE}.bz2 ]; then
     echo $TREE is already exists.
-    pzstd -d ${TREE}.zst
+    bzip2 -dc ${TREE}.bz2 >${TREE}
   else
 	$MKTREEFILE $ARPA $TREE
-    pzstd ${TREE}
+    bzip2 ${TREE}
   fi
 fi
 
@@ -78,7 +82,7 @@ if [ "$OPTMETHOD" = "embedding" ]; then
        echo "CLEANING A TREE FILE : `date`"
        rm $TREE
 fi
-#echo "CLEANING A WORDID FILE : `date`"
-#rm $WORDIDS
+echo "CLEANING A WORDID FILE : `date`"
+rm $WORDIDS
 
 echo "DONE : `date`"
