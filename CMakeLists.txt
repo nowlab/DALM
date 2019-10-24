@@ -97,6 +97,7 @@ target_link_libraries(
 #    SegFault
 )
 
+message(STATUS "CMAKE_INSTALL_PREFIX is " ${CMAKE_INSTALL_PREFIX})
 INSTALL(TARGETS dalm ARCHIVE DESTINATION lib)
 INSTALL(FILES ${HEADERS} DESTINATION include)
 INSTALL(FILES darts-clone/darts.h DESTINATION darts-clone)
