@@ -156,6 +156,18 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 
 	logger << "EmbeddedDA[" << daid << "] " << "Total construction time is " << std::chrono::duration<double>(hrc::now() - start).count() << " seconds." << Logger::endi;
 
+	std::vector<size_t> cnt_table_log_;
+	for (auto [n, c] : children_cnt_table_) {
+		auto log_n = 64-_lzcnt_u64(n-1);
+		if (cnt_table_log_.size() <= log_n)
+			cnt_table_log_.resize(log_n+1);
+		cnt_table_log_[log_n] += c;
+	}
+	logger << "  Count children table" << Logger::endi;
+	for (size_t i = 0; i < cnt_table_log_.size(); i++) {
+		logger << "<= 2^" << i << "] " << cnt_table_log_[i] << Logger::endi;
+	}
+
 	replace_value();
 	delete [] history;
 	delete [] words;
@@ -542,6 +554,8 @@ void EmbeddedDA::replace_value()
 }
 
 void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
+	children_cnt_table_[amount]++;
+
 	unsigned *pos = new unsigned[amount];
 	unsigned minindex = 0;
 	unsigned maxindex = 0;

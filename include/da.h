@@ -8,6 +8,7 @@
 #include <utility>
 #include <string>
 #include <set>
+#include <unordered_map>
 
 #include "state.h"
 #include "pthread_wrapper.h"
@@ -181,6 +182,7 @@ namespace DALM{
 			};
 			_BitVector<1> empty_element_bits;
 #endif
+			std::unordered_map<size_t, size_t> children_cnt_table_;
 	};
 
 	class DABuilder : public PThreadWrapper {

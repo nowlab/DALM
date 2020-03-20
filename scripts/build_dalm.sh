@@ -73,7 +73,8 @@ fi
 
 echo "DALM_BUILDER : `date`"
 if [ "$OPTMETHOD" = "embedding" ]; then
-    LC_ALL=C $BUILDER embedding $ARPA $TREE $WORDDICT $WORDIDS $DABINMODEL $WORDBIN $DIVNUM
+    echo "Skip build dalm"
+#    LC_ALL=C $BUILDER embedding $ARPA $TREE $WORDDICT $WORDIDS $DABINMODEL $WORDBIN $DIVNUM
 fi
 
 echo "GENERATING AN INIFILE : `date`"
