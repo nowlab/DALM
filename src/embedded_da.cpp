@@ -158,7 +158,9 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 
 	std::vector<size_t> cnt_table_log_;
 	for (auto [n, c] : children_cnt_table_) {
-		auto log_n = 64-_lzcnt_u64(n-1);
+		auto log_n = 0;
+		while ((1ull<<log_n) < n)
+			log_n++;
 		if (cnt_table_log_.size() <= log_n)
 			cnt_table_log_.resize(log_n+1);
 		cnt_table_log_[log_n] += c;

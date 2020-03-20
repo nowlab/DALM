@@ -64,7 +64,6 @@ add_library(
     dalm STATIC
     ${SOURCE_FILES}
 )
-target_compile_options(dalm PRIVATE "-march=native")
 
 add_executable(mkworddict src/mkworddict.cpp)
 target_link_libraries(
