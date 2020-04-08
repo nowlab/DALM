@@ -174,7 +174,7 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 	}
 	{
 		std::vector<double> fbtime_table_log_;
-		for (auto [n, c] : children_cnt_table_) {
+		for (auto [n, c] : children_fb_time_table_) {
 			auto log_n = 0;
 			while ((1ull<<log_n) < n)
 				log_n++;
