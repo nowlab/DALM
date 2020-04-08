@@ -13,6 +13,7 @@
 #include "value_array.h"
 #include "value_array_index.h"
 #include "bit_util.h"
+#include "stopwatch.h"
 
 using namespace DALM;
 
@@ -156,18 +157,35 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 
 	logger << "EmbeddedDA[" << daid << "] " << "Total construction time is " << std::chrono::duration<double>(hrc::now() - start).count() << " seconds." << Logger::endi;
 
-	std::vector<size_t> cnt_table_log_;
-	for (auto [n, c] : children_cnt_table_) {
-		auto log_n = 0;
-		while ((1ull<<log_n) < n)
-			log_n++;
-		if (cnt_table_log_.size() <= log_n)
-			cnt_table_log_.resize(log_n+1);
-		cnt_table_log_[log_n] += c;
+	{
+		std::vector<size_t> cnt_table_log_;
+		for (auto [n, c] : children_cnt_table_) {
+			auto log_n = 0;
+			while ((1ull<<log_n) < n)
+				log_n++;
+			if (cnt_table_log_.size() <= log_n)
+				cnt_table_log_.resize(log_n+1);
+			cnt_table_log_[log_n] += c;
+		}
+		logger << "  Count children table" << Logger::endi;
+		for (size_t i = 0; i < cnt_table_log_.size(); i++) {
+			logger << "<= 2^" << i << "] " << cnt_table_log_[i] << Logger::endi;
+		}
 	}
-	logger << "  Count children table" << Logger::endi;
-	for (size_t i = 0; i < cnt_table_log_.size(); i++) {
-		logger << "<= 2^" << i << "] " << cnt_table_log_[i] << Logger::endi;
+	{
+		std::vector<double> fbtime_table_log_;
+		for (auto [n, c] : children_cnt_table_) {
+			auto log_n = 0;
+			while ((1ull<<log_n) < n)
+				log_n++;
+			if (fbtime_table_log_.size() <= log_n)
+				fbtime_table_log_.resize(log_n+1);
+			fbtime_table_log_[log_n] += c;
+		}
+		logger << "  FindBase time table" << Logger::endi;
+		for (size_t i = 0; i < fbtime_table_log_.size(); i++) {
+			logger << "<= 2^" << i << "] " << fbtime_table_log_[i] << Logger::endi;
+		}
 	}
 
 	replace_value();
@@ -576,6 +594,7 @@ void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 		base-=da_array[base+word[minindex]].check.check_val;
 	}
 	// TODO: Comparison of XCHECK
+	StopWatch sw;
 #ifndef DALM_NEW_XCHECK
 	{
 		unsigned k=0;
@@ -621,6 +640,7 @@ void EmbeddedDA::det_base(int *word,float *val,unsigned amount,unsigned now){
 		}
 	}
 #endif
+	children_fb_time_table_[amount] += sw.milli_sec();
 
 	da_array[now].base.base_val=base;
 
