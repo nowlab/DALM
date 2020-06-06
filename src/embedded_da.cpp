@@ -90,11 +90,6 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 	auto start = hrc::now();
 
 	for(size_t i = 0; i < total; i++){
-		if((i+1) % tenpercent == 0){
-			auto sec = std::chrono::duration<double>(hrc::now() - start).count();
-			logger << "EmbeddedDA[" << daid << "] " << (i+1)/tenpercent << "0% done. " << sec << " sec. " << loop_counts_ << " s checked, " << skip_counts_ << " s skipped." << Logger::endi;
-		}
-
 		unsigned short n;
 		VocabId *ngram;
 		float value;
@@ -140,6 +135,11 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 		wordssize++;
 
 		delete [] ngram;
+
+		if((i+1) % tenpercent == 0){
+			auto sec = std::chrono::duration<double>(hrc::now() - start).count();
+			logger << "EmbeddedDA[" << daid << "] " << (i+1)/tenpercent << "0% done. " << sec << " sec. " << loop_counts_ << " s checked, " << skip_counts_ << " s skipped." << Logger::endi;
+		}
 	}
 	unsigned now=0;
 	for(size_t j = 0; j < historysize; j++){
