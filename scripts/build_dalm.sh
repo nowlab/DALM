@@ -59,22 +59,22 @@ fi
 
 if [ "$OPTMETHOD" = "embedding" ]; then
   if [ -e ${TREE}.bz2 ]; then
-    echo Zipped TREE is already exists.
+    echo "Zipped TREE is already exists."
     echo "Unzipping... : `date`"
     $BZIP2 -dc ${TREE}.bz2 >${TREE}
   elif [ ! -e ${TREE} ]; then
     echo "MKTREEFILE : `date`"
-	$MKTREEFILE $ARPA $TREE
+	  $MKTREEFILE $ARPA $TREE
     $BZIP2 ${TREE}
   else
-    echo TREE is already exists.
+    echo "TREE is already exists."
   fi
 fi
 
 echo "DALM_BUILDER : `date`"
 if [ "$OPTMETHOD" = "embedding" ]; then
-    echo "Skip build dalm"
-#    LC_ALL=C $BUILDER embedding $ARPA $TREE $WORDDICT $WORDIDS $DABINMODEL $WORDBIN $DIVNUM
+#    echo "Skip build dalm"
+    LC_ALL=C $BUILDER embedding $ARPA $TREE $WORDDICT $WORDIDS $DABINMODEL $WORDBIN $DIVNUM
 fi
 
 echo "GENERATING AN INIFILE : `date`"
@@ -84,11 +84,11 @@ echo "WORDS=$WORDBINFN" >> $INI
 echo "ARPA=`basename $ARPA`" >> $INI
 echo "WORDSTXT=$WORDDICTFN" >> $INI
 
-if [ "$OPTMETHOD" = "embedding" ]; then
-       echo "CLEANING A TREE FILE : `date`"
-       rm $TREE
-fi
-echo "CLEANING A WORDID FILE : `date`"
-rm $WORDIDS
+#if [ "$OPTMETHOD" = "embedding" ]; then
+#    echo "CLEANING A TREE FILE : `date`"
+#    rm $TREE
+#fi
+#echo "CLEANING A WORDID FILE : `date`"
+#rm $WORDIDS
 
 echo "DONE : `date`"
