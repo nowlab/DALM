@@ -9,7 +9,7 @@
 
 #include "dalm.h"
 #include "dalm/bst_da.h"
-#include "dalm/bit_util.h"
+#include "dalm/build_da_util.h"
 #include "dalm/stopwatch.h"
 
 using namespace DALM;
@@ -825,92 +825,18 @@ void BstDA::det_base(VocabId *words, DAPair *children, std::size_t n_children, f
         base-= da_array_[base + words[0]].check.check_val;
     }
 
-#ifdef DALM_NEW_XCHECK
-    auto validate_at = [&](size_t index) -> uint64_t {
-        return index*DALM_N_BITS_UINT64_T < array_size_ ? validate[index] : 0ull;
-    };
-    auto validate_word_from = [&](size_t pos) -> uint64_t {
-        auto index = pos/DALM_N_BITS_UINT64_T;
-        auto inset = pos%DALM_N_BITS_UINT64_T;
-        if (inset == 0) {
-            return validate_at(index);
-        } else {
-            return (validate_at(index) >> inset) | (validate_at(index+1) << (DALM_N_BITS_UINT64_T-inset));
-        }
-    };
+    {
+        StopWatch sw;
+        base = build_da_util::find_base(
+#ifdef FIND_BASE_ACCESS_DA
+            da_array_,
 #endif
-    while(base + words[0] < array_size_){
-        skip_counts_++;
+            array_size_, words, n_children, base, validate,
 #ifndef DALM_NEW_XCHECK
-        assert(da_array_[base + words[0]].check.check_val < 0);
-        std::size_t index = base / DALM_N_BITS_UINT64_T;
-        std::size_t bit = base % DALM_N_BITS_UINT64_T;
-        assert(index + 1 < array_size_ / DALM_N_BITS_UINT64_T + 1);
-
-        uint64_t array_prefix;
-        if(bit == 0){
-            array_prefix = validate[index];
-        }else{
-            array_prefix = (validate[index] >> bit);
-            array_prefix |= ((validate[index+1] & ((0x1ULL << bit) - 1))<<(DALM_N_BITS_UINT64_T-bit));
-        }
-
-        std::size_t k = prefix_length + 1;
-        if((array_prefix & words_prefix) == 0){
-            while(k < n_children){
-                loop_counts_++;
-                int pos = base + words[k];
-
-                if(pos < array_size_ && da_array_[pos].check.check_val >= 0){
-                    assert(da_array_[base + words[0]].check.check_val < 0);
-                    base -= da_array_[base + words[0]].check.check_val;
-                    k = prefix_length + 1;
-                    assert(base >= 0);
-                    break;
-                }else{
-                    ++k;
-                }
-            }
-            if(k >= n_children) break;
-        }else{
-            assert(da_array_[base + words[0]].check.check_val < 0);
-            base -= da_array_[base + words[0]].check.check_val;
-            assert(base >= 0);
-        }
-# else
-        uint64_t base_mask = 0;
-        for (size_t k = 0; k < n_children; k++) {
-            loop_counts_++;
-            base_mask |= validate_word_from(base + words[k]);
-            if (~base_mask == 0ull)
-                break;
-        }
-        if (~base_mask != 0ull) {
-            base += bit_util::ctz(~base_mask);
-            break;
-        } else {
-#ifndef DALM_EL_SKIP
-            base += DALM_N_BITS_UINT64_T;
-#else
-/*
- *  0           64
- * |ooxo...xoox|xxxxxo...
- *  ↑        ↑ →→→→→ ↑
- *  1        2 link  3
- * 1. Current empty head
- * 2. Back empty element of 64s alignment
- * 3. Next empty head
- */
-            assert(da_array_[base + words[0]].check.check_val < 0);
-            auto trailing_front = base + words[0]; // 1
-            auto trailing_insets = 63 - bit_util::clz(~validate_word_from(trailing_front)); // 2-1
-            assert(da_array_[trailing_front + trailing_insets].check.check_val < 0);
-            auto skip_distance = trailing_insets + (-da_array_[trailing_front + trailing_insets].check.check_val); // 3-1
-            assert(skip_distance >= 64); // The advantage to above one.
-            base += skip_distance;
+            words_prefix, prefix_length,
 #endif
-        }
-#endif
+        skip_counts_, loop_counts_);
+        children_fb_time_table_[n_children] += sw.milli_sec();
     }
 
     da_array_[context].base.base_val = base;

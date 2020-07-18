@@ -69,6 +69,7 @@ set(HEADERS
     src/dalm/vocabulary_file.h
     src/dalm/fileutil.h
     src/dalm/sortutil.h
+    src/dalm/build_da_util.h
     )
 
 set(SOURCE_FILES
@@ -82,9 +83,9 @@ set(SOURCE_FILES
     src/reverse_da.cpp
     src/value_array.cpp
     src/vocabulary.cpp
-    src/dalm.cpp
     src/vocabulary_file.cpp
     src/build_util.cpp
+    src/build_da_util.cpp
     externals/darts.h
     )
 

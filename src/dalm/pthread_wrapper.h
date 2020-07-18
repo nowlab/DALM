@@ -4,6 +4,7 @@
 #include <pthread.h>
 
 #include <fstream>
+#include <vector>
 
 #if defined(__linux__)
     #define CPUINFO "/proc/cpuinfo"
