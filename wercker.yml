@@ -1,0 +1,11 @@
+box: jnory/ci_base:latest
+build:
+  steps:
+    - script:
+        name: run tests
+        code: |
+          mkdir -p build
+          cd build
+          cmake ..
+          make
+          ./dalm_test_all

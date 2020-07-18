@@ -1,19 +1,14 @@
-#include "da.h"
-
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
 #include <climits>
 
 #include <utility>
-#include <fileutil.h>
 #include <chrono>
-
-#include "treefile.h"
-#include "value_array.h"
-#include "value_array_index.h"
-#include "bit_util.h"
-#include "stopwatch.h"
+#include "dalm/bit_util.h"
+#include "dalm/stopwatch.h"
+#include "dalm.h"
+#include "dalm/embedded_da.h"
 
 using namespace DALM;
 
@@ -86,8 +81,7 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 
 	size_t tenpercent = total / 10;
 
-	using hrc = std::chrono::high_resolution_clock;
-	auto start = hrc::now();
+	StopWatch sw;
 
 	for(size_t i = 0; i < total; i++){
 		unsigned short n;
@@ -137,8 +131,7 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 		delete [] ngram;
 
 		if((i+1) % tenpercent == 0){
-			auto sec = std::chrono::duration<double>(hrc::now() - start).count();
-			logger << "EmbeddedDA[" << daid << "] " << (i+1)/tenpercent << "0% done. " << sec << " sec. " << loop_counts_ << " s checked, " << skip_counts_ << " s skipped." << Logger::endi;
+			logger << "EmbeddedDA[" << daid << "] " << (i+1)/tenpercent << "0% done. " << sw.sec() << " sec. " << loop_counts_ << " s checked, " << skip_counts_ << " s skipped." << Logger::endi;
 		}
 	}
 	unsigned now=0;
@@ -155,7 +148,7 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 		}
 	}
 
-	logger << "EmbeddedDA[" << daid << "] " << "Total construction time is " << std::chrono::duration<double>(hrc::now() - start).count() << " seconds." << Logger::endi;
+	logger << "EmbeddedDA[" << daid << "] " << "Total construction time is " << sw.sec() << " seconds." << Logger::endi;
 
 	{
 		std::vector<size_t> cnt_table_log_;
@@ -194,14 +187,26 @@ void EmbeddedDA::make_da(std::string &pathtotreefile, ValueArrayIndex *value_arr
 	delete [] values;
 }
 
-void EmbeddedDA::dump(FILE *fp)
-{
-	fwrite(&daid,sizeof(unsigned char),1,fp);
-	fwrite(&datotal,sizeof(unsigned char),1,fp);
-	fwrite(&max_index,sizeof(unsigned),1,fp);
-	fwrite(da_array, sizeof(DAPair), max_index+1, fp);
-
+void EmbeddedDA::dump(BinaryFileWriter &writer) {
+	writer << daid;
+	writer << datotal;
+	writer << max_index;
+	writer.write_many(da_array, max_index+1);
 	logger << "EmbeddedDA[" << daid << "] da-size: " << max_index << Logger::endi;
+}
+
+void EmbeddedDA::write_and_free(BinaryFileWriter &writer){
+	writer.write_many(da_array, max_index+1);
+	if(da_array != NULL) delete [] da_array;
+	if(value_id != NULL) delete [] value_id;
+	da_array = NULL;
+	value_id = NULL;
+}
+
+void EmbeddedDA::reload(BinaryFileReader &reader){
+	array_size = max_index+1;
+	da_array = new DAPair[array_size];
+	reader.read_many(da_array, array_size);
 }
 
 float EmbeddedDA::get_prob(VocabId *word, unsigned char order){
@@ -367,7 +372,7 @@ float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap){
 
 	if(count <= g){
 		throw "BUG";
-		//finalized=true;
+		//independent_left=true;
 		//extended=false;
 		//return 0.0;
 	}
@@ -444,7 +449,7 @@ float EmbeddedDA::get_prob(const Fragment &fprev, State &state, Gap &gap, Fragme
 
 	if(count <= g){
 		throw "BUG";
-		//finalized=true;
+		//independent_left=true;
 		//extended=false;
 		//return 0.0;
 	}

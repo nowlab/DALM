@@ -1,14 +1,13 @@
-build/
+.build
+.waf*
+.lock*
+.DS_Store
+root
+.idea
+_site
+build
 
-bin/
-nbin/
-n1bin/
-
-### https://raw.github.com/github/gitignore/a14296fa82ae0be1ddeaf39b12fce1e2aed2c5b9/C++.gitignore
-
-# Prerequisites
-*.d
-
+### C++ template
 # Compiled Object files
 *.slo
 *.lo
@@ -26,7 +25,6 @@ n1bin/
 
 # Fortran module files
 *.mod
-*.smod
 
 # Compiled Static libraries
 *.lai
@@ -40,18 +38,10 @@ n1bin/
 *.app
 
 
-### https://raw.github.com/github/gitignore/a14296fa82ae0be1ddeaf39b12fce1e2aed2c5b9/Waf.gitignore
-
-# For projects that use the Waf build system: https://waf.io/
-# Dot-hidden on Unix-like systems
-.waf-*-*/
-.waf3-*-*/
-# Hidden directory on Windows (no dot)
-waf-*-*/
-waf3-*-*/
-# Lockfile
-.lock-waf_*_build
-
+# Params for MatsuTaku
+bin/
+nbin/
+n1bin/
 
 ### https://raw.github.com/github/gitignore/a14296fa82ae0be1ddeaf39b12fce1e2aed2c5b9/CMake.gitignore
 

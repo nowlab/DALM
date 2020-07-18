@@ -3,21 +3,21 @@ project(dalm)
 
 enable_testing()
 
-add_definitions(-DDALM_MAX_ORDER=6)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(BUILTIN_OPTIONS "")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g ${BUILTIN_OPTIONS}")
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3")
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
-message(STATUS "CMAKE_CXX_STANDARD is " ${CMAKE_CXX_STANDARD})
-message(STATUS "CMAKE_BUILD_TYPE is " ${CMAKE_BUILD_TYPE})
-message(STATUS "CMAKE_CXX_FLAGS is " ${CMAKE_CXX_FLAGS})
+set(CMAKE_MACOSX_RPATH FALSE)
 
+if(WITH_PYTHON)
+    find_package(Boost COMPONENTS python REQUIRED)
+    find_package(PythonLibs REQUIRED)
+    include_directories(${PYTHON_INCLUDE_DIRS})
+endif()
+
+add_subdirectory(tests/gtest)
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+
+add_definitions(-DDALM_MAX_ORDER=6)
+# Definitions from MatsuTaku
 option(DALM_NEW_XCHECK "Enable new XCHECK algorithm." ON)
-option(DALM_EL_SKIP "Enable EL skipping with new XCHECK algorithm." ON)
+option(DALM_EL_SKIP "Enable EL skipping with new XCHECK algorithm." OFF)
 if (DALM_NEW_XCHECK)
     add_definitions(-DDALM_NEW_XCHECK)
 endif()
@@ -26,38 +26,66 @@ if (DALM_EL_SKIP)
 endif()
 message(STATUS "DALM_NEW_XCHECK is " ${DALM_NEW_XCHECK})
 message(STATUS "DALM_EL_SKIP is " ${DALM_EL_SKIP})
+# end definitions
 
-include_directories("include")
-include_directories("darts-clone")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -fPIC")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -flto")
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+include_directories("externals")
+include_directories(${PROJECT_BINARY_DIR})
+include_directories(${Boost_INCLUDE_DIRS})
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/dalm_test_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/dalm_test_config.h)
+
+set(HEADERS_MAIN
+    src/dalm.h
+    )
 
 set(HEADERS
-    include/arpafile.h
-    include/da.h
-    include/dalm.h
-    include/fragment.h
-    include/fileutil.h
-    include/handler.h
-    include/logger.h
-    include/pthread_wrapper.h
-    include/state.h
-    include/treefile.h
-    include/value_array.h
-    include/value_array_index.h
-    include/version.h
-    include/vocabulary.h
-    include/vocabulary_file.h
+    src/dalm/arpafile.h
+    src/dalm/buildutil.h
+    src/dalm/da.h
+    src/dalm/bst_da.h
+    src/dalm/embedded_da.h
+    src/dalm/reverse_da.h
+    src/dalm/fragment.h
+    src/dalm/fileutil.h
+    src/dalm/handler.h
+    src/dalm/logger.h
+    src/dalm/pthread_wrapper.h
+    src/dalm/reversefile.h
+    src/dalm/trie_reader.h
+    src/dalm/state.h
+    src/dalm/treefile.h
+    src/dalm/value_array.h
+    src/dalm/value_array_index.h
+    src/dalm/version.h
+    src/dalm/vocabulary.h
+    src/dalm/vocabulary_file.h
+    src/dalm/fileutil.h
+    src/dalm/sortutil.h
     )
 
 set(SOURCE_FILES
+    ${HEADERS_MAIN}
     ${HEADERS}
+    src/bst_da.cpp
     src/embedded_da.cpp
     src/fragment.cpp
     src/dalm.cpp
     src/logger.cpp
+    src/reverse_da.cpp
     src/value_array.cpp
     src/vocabulary.cpp
+    src/dalm.cpp
     src/vocabulary_file.cpp
-    darts-clone/darts.h
+    src/build_util.cpp
+    externals/darts.h
     )
 
 add_library(
@@ -65,41 +93,74 @@ add_library(
     ${SOURCE_FILES}
 )
 
-add_executable(mkworddict src/mkworddict.cpp)
+add_executable(query_dalm examples/query_example.cpp)
 target_link_libraries(
-    mkworddict
+    query_dalm
     dalm
     pthread
-#    SegFault
 )
 
-add_executable(query_sample sample/query_sample.cpp)
+add_executable(build_dalm src/builder.cpp externals/ezOptionParser.hpp)
 target_link_libraries(
-    query_sample
+    build_dalm
     dalm
     pthread
-#    SegFault
 )
 
-add_executable(query_with_state_sample sample/query_with_state_sample.cpp)
+add_executable(validate_dalm src/checker.cpp)
 target_link_libraries(
-    query_with_state_sample
+    validate_dalm
     dalm
     pthread
-#    SegFault
 )
 
-add_executable(dalm_builder src/builder.cpp)
+add_executable(export_dalm src/exporter.cpp)
 target_link_libraries(
-    dalm_builder
+    export_dalm
     dalm
     pthread
-#    SegFault
 )
 
-message(STATUS "CMAKE_INSTALL_PREFIX is " ${CMAKE_INSTALL_PREFIX})
+add_library(
+    dalm_test_helper STATIC
+    tests/build_dalm_for_test.cpp
+    tests/build_dalm_for_test.h
+)
+
+add_executable(dalm_test_all
+    tests/test_build.cpp
+    tests/test_query.cpp
+)
+target_link_libraries(
+    dalm_test_all
+    dalm_test_helper
+    dalm
+    pthread
+    gtest
+    gtest_main
+)
+
+if(WITH_PYTHON)
+    add_library(_dalm SHARED
+        python/_dalm.cpp
+        python/_dalm.h)
+    target_link_libraries(
+        _dalm
+        dalm
+        pthread
+        ${Boost_LIBRARIES}
+        ${PYTHON_LIBRARY}
+    )
+    set_target_properties(_dalm PROPERTIES PREFIX "")
+    set_target_properties(_dalm PROPERTIES SUFFIX ".so")
+endif()
+
 INSTALL(TARGETS dalm ARCHIVE DESTINATION lib)
-INSTALL(FILES ${HEADERS} DESTINATION include)
-INSTALL(FILES darts-clone/darts.h DESTINATION darts-clone)
-INSTALL(DIRECTORY scripts DESTINATION . USE_SOURCE_PERMISSIONS)
-INSTALL(TARGETS mkworddict query_sample query_with_state_sample dalm_builder RUNTIME DESTINATION bin)
+INSTALL(FILES ${HEADERS} DESTINATION include/dalm)
+INSTALL(FILES ${HEADERS_MAIN} DESTINATION include)
+INSTALL(FILES externals/darts.h DESTINATION darts-clone)
+INSTALL(TARGETS validate_dalm build_dalm query_dalm RUNTIME DESTINATION bin)
+if(WITH_PYTHON)
+    INSTALL(TARGETS _dalm LIBRARY DESTINATION python)
+    INSTALL(FILES python/dalm.py DESTINATION python)
+endif()
