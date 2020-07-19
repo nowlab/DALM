@@ -1,6 +1,7 @@
 #include "dalm/build_da_util.h"
 
 #include <cassert>
+#include <algorithm>
 #ifdef DALM_NEW_XCHECK
 #include "dalm/bit_util.h"
 #endif
@@ -80,6 +81,19 @@ int build_da_util::find_base(
 #endif
     long array_size, const VocabId* children, size_t n_children, int initial_base,
     const uint64_t* validate, size_t& skip_counts, size_t& loop_counts) {
+    auto validate_at = [&](size_t index) -> uint64_t {
+      return index*64 < array_size ? validate[index] : 0ull;
+    };
+    auto validate_word_from = [&](size_t pos) -> uint64_t {
+      auto index = pos/64;
+      auto inset = pos%64;
+      if (inset == 0) {
+        return validate_at(index);
+      } else {
+        return (validate_at(index) >> inset) | (validate_at(index+1) << (64-inset));
+      }
+    };
+
     auto base = initial_base;
     while (base + children[0] < array_size) {
         skip_counts++;
@@ -87,13 +101,12 @@ int build_da_util::find_base(
         uint64_t base_mask = 0;
         for (size_t k = 0; k < n_children; k++) {
             loop_counts++;
-            base_mask |= validate_word_from(validate, array_size, base + children[k]);
+            base_mask |= validate_word_from(base + children[k]);
             if (~base_mask == 0ull)
                 break;
         }
         if (~base_mask != 0ull) {
-            base += bit_util::ctz(~base_mask);
-            break;
+            return base + bit_util::ctz(~base_mask);
         } else {
 #ifndef DALM_EL_SKIP
             base += 64;
@@ -110,18 +123,18 @@ int build_da_util::find_base(
             assert(da_array[base + children[0]].check.check_val < 0);
             auto trailing_front = base + children[0]; // 1
             if (trailing_front + 64 < array_size) {
-                auto trailing_insets = 63 - bit_util::clz(~validate_word_from(validate, array_size, trailing_front)); // 2-1
+                auto trailing_insets = 63 - bit_util::clz(~validate_word_from(trailing_front)); // 2-1
                 assert(da_array[trailing_front + trailing_insets].check.check_val < 0);
                 auto skip_distance = trailing_insets + (-da_array[trailing_front + trailing_insets].check.check_val); // 3-1
                 assert(skip_distance >= 64); // The advantage to above one.
                 base += skip_distance;
             } else {
-                base = array_size - children[0];
+                base += 64;
             }
 #endif
         }
     }
-    return base;
+    return array_size - children[0];
 }
 
 #endif

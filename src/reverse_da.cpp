@@ -782,13 +782,14 @@ void ReverseDA::det_base(VocabId *children, float node_prob, Base node_bow, std:
         return;
     }
 
+    StopWatch sw;
     int base = head - children[0];
-    while(base < 0){
-        base -= da_array_[ base + children[0] ].check.check_val;
-    }
-
-    {
-        StopWatch sw;
+    if (1 + children[0] >= array_size_) {
+        base = 1;
+    } else { // Find base
+        while (base <= 0) {
+            base -= da_array_[base + children[0]].check.check_val;
+        }
         base = build_da_util::find_base(
 #ifdef FIND_BASE_ACCESS_DA
             da_array_,
@@ -797,9 +798,9 @@ void ReverseDA::det_base(VocabId *children, float node_prob, Base node_bow, std:
 #ifndef DALM_NEW_XCHECK
             words_prefix, prefix_length,
 #endif
-        skip_counts_, loop_counts_);
-        children_fb_time_table_[n_children] += sw.milli_sec();
+            skip_counts_, loop_counts_);
     }
+    children_fb_time_table_[n_children] += sw.milli_sec();
 
     da_array_[context].base.base_val = base;
     int max_jump = base + children[n_children - 1] + 1;
