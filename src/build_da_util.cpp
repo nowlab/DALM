@@ -78,7 +78,7 @@ int build_da_util::find_base(
 
     auto base = initial_base;
     while (base < array_size - children[0]) {
-        if (base > std::numeric_limits<int>::max() - children[0]) {
+        if (base > std::numeric_limits<int>::max() - children[n_children-1]) {
             throw std::overflow_error("Overflow array size with 31 bits pointer.");
         }
         skip_counts++;
