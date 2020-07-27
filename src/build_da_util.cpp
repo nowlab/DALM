@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <algorithm>
+#include <limits>
 #ifdef DALM_NEW_XCHECK
 #include "dalm/bit_util.h"
 #endif
@@ -95,7 +96,10 @@ int build_da_util::find_base(
     };
 
     auto base = initial_base;
-    while (base + children[0] < array_size) {
+    while (base < array_size - children[0]) {
+        if (base > std::numeric_limits<int>::max() - children[0]) {
+            throw std::overflow_error("Overflow array size with 31bits pointer size.");
+        }
         skip_counts++;
 
         uint64_t base_mask = 0;
