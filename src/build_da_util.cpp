@@ -9,25 +9,6 @@
 
 using namespace DALM;
 
-namespace {
-
-#ifdef DALM_NEW_XCHECK
-inline uint64_t validate_word_from(const uint64_t* validate, size_t array_size, size_t pos) {
-    auto validate_at = [&](size_t index) -> uint64_t {
-        return index*64 < array_size ? validate[index] : 0ull;
-    };
-    auto index = pos/64;
-    auto inset = pos%64;
-    if (inset == 0) {
-        return validate_at(index);
-    } else {
-        return (validate_at(index) >> inset) | (validate_at(index+1) << (64-inset));
-    }
-}
-#endif
-
-}
-
 #ifndef DALM_NEW_XCHECK
 
 int build_da_util::find_base(const DAPair* da_array, long array_size, const VocabId* children, size_t n_children, int initial_base, const uint64_t* validate, uint64_t words_prefix, size_t prefix_length, size_t& skip_counts, size_t& loop_counts) {
@@ -98,7 +79,7 @@ int build_da_util::find_base(
     auto base = initial_base;
     while (base < array_size - children[0]) {
         if (base > std::numeric_limits<int>::max() - children[0]) {
-            throw std::overflow_error("Overflow array size with 31bits pointer size.");
+            throw std::overflow_error("Overflow array size with 31 bits pointer.");
         }
         skip_counts++;
 
