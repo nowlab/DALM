@@ -121,6 +121,7 @@ namespace DALM {
         Logger &logger_;
 
         // Member from MatsuTaku
+        char log_buffer_[128];
         size_t loop_counts_=0;
         size_t skip_counts_=0;
         std::map<size_t, size_t> children_cnt_table_;

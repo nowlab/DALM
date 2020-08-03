@@ -92,8 +92,8 @@ void BstDA::make_da(std::string &pathtotreefile, ValueArrayIndex *, Vocabulary &
     for(std::size_t i = 0; i < n_entries; ++i){
         if((i+1) % ten_percent == 0){
             char log[100];
-            sprintf(log, "BstDA[%u] %lu0%% done. %.3lf sec. %lu s checked, %lu s skipped.", daid_, (i+1)/ten_percent, sw.sec(), loop_counts_, skip_counts_);
-            logger_ << log << Logger::endi;
+            sprintf(log, "BstDA[%u] %lu0%% done. %.3lf sec. %lu s checked, %lu s skipped.\n", daid_, (i+1)/ten_percent, sw.sec(), loop_counts_, skip_counts_);
+            logger_ << log;
         }
 
         File::ARPAEntry entry = file.next();

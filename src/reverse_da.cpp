@@ -52,7 +52,8 @@ void ReverseDA::fill_inserted_node(std::string &pathtotreefile, Vocabulary &voca
     std::size_t tenpercent = n_entries / 10;
     for(size_t i = 0; i < n_entries; i++){
         if((i+1) % tenpercent == 0){
-            logger_ << "ReverseDA[" << daid_ << "][fill] " << (i+1)/tenpercent << "0% done." << Logger::endi;
+            sprintf(log_buffer_, "ReverseDA[%u][fill] %lu0%% done.", daid_, (i+1)/tenpercent);
+            logger_ << log_buffer_ << Logger::endi;
         }
 
         File::ARPAEntry entry = file.next();
@@ -165,17 +166,18 @@ void ReverseDA::make_da(std::string &pathtotreefile, ValueArrayIndex *, Vocabula
     int max_slot = 0;
 
     std::size_t n_entries = file.size();
-    logger_ << "ReverseDA[" << daid_ << "] n_entries=" << n_entries << Logger::endi;
-    logger_ << "ReverseDA[" << daid_ << "] n_unigram=" << n_unigram << Logger::endi;
+    sprintf(log_buffer_, "ReverseDA[%u] n_entries=%lu", daid_, n_entries);
+    logger_ << log_buffer_ << Logger::endi;
+    sprintf(log_buffer_, "ReverseDA[%u] n_unigram=%lu", daid_, n_unigram);
+    logger_ << log_buffer_ << Logger::endi;
 
     StopWatch sw;
 
     std::size_t tenpercent = n_entries / 10;
     for(size_t i = 0; i < n_entries; i++){
         if((i+1) % tenpercent == 0){
-            char log[100];
-            sprintf(log, "ReverseDA[%u] %lu0%% done. %.3lf sec. %lu s checked, %lu s skipped.", daid_, (i+1)/tenpercent, sw.sec(), loop_counts_, skip_counts_);
-            logger_ << log << Logger::endi;
+            sprintf(log_buffer_, "ReverseDA[%u] %lu0%% done. %.3lf sec. %lu s checked, %lu s skipped.", daid_, (i+1)/tenpercent, sw.sec(), loop_counts_, skip_counts_);
+            logger_ << log_buffer_ << Logger::endi;
         }
 
         File::ARPAEntry entry = file.next();
@@ -242,9 +244,10 @@ void ReverseDA::make_da(std::string &pathtotreefile, ValueArrayIndex *, Vocabula
     delete [] children;
     delete [] values;
 
-    logger_ << "ReverseDA[" << daid_ << "] array_size=" << array_size_ << " n_slot_used=" << n_slot_used << Logger::endi;
-
-    logger_ << "ReverseDA[" << daid_ << "] " << "Total construction time is " << sw.sec() << " seconds." << Logger::endi;
+    sprintf(log_buffer_, "ReverseDA[%u] array_size=%ld n_slot_used=%lu", daid_, array_size_, n_slot_used);
+    logger_ << log_buffer_ << Logger::endi;
+    sprintf(log_buffer_, "ReverseDA[%u] Total construction time=%lf seconds.", daid_, sw.sec());
+    logger_ << log_buffer_ << Logger::endi;
 
     {
         std::vector<size_t> cnt_table_log_;
