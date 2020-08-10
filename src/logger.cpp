@@ -23,7 +23,10 @@ void Logger::printMsg(const char *head, const char *msg){
 	strncpy(nowmsg, now, chlen-1);
 	nowmsg[chlen-1]='\0';
 
+	std::unique_lock<std::mutex> lock(write_mutex);
 	fprintf(fp, "%s:%s - %s\n", head, nowmsg, msg);
+	lock.unlock();
+
 	free(nowmsg);
 }
 
@@ -68,6 +71,7 @@ char *Logger::getTimestamp(){
 }
 
 Logger &Logger::operator<<(MSGLEVEL endlevel){
+    std::lock_guard<std::mutex> lock(buffering_mutex);
 	switch(endlevel){
 	case endd:
 		debug(buffer.str());
@@ -96,54 +100,63 @@ Logger &Logger::operator<<(MSGLEVEL endlevel){
 }
 
 Logger &Logger::operator<<(std::string msg){
+    std::lock_guard<std::mutex> lock(buffering_mutex);
 	buffer << msg;
 
 	return *this;
 }
 
 Logger &Logger::operator<<(int msg){
+    std::lock_guard<std::mutex> lock(buffering_mutex);
 	buffer << msg;
 
 	return *this;
 }
 
 Logger &Logger::operator<<(float msg){
+    std::lock_guard<std::mutex> lock(buffering_mutex);
 	buffer << msg;
 
 	return *this;
 }
 
 Logger &Logger::operator<<(double msg){
+    std::lock_guard<std::mutex> lock(buffering_mutex);
 	buffer << msg;
 
 	return *this;
 }
 
 Logger &Logger::operator<<(long msg){
+    std::lock_guard<std::mutex> lock(buffering_mutex);
 	buffer << msg;
 
 	return *this;
 }
 
 Logger &Logger::operator<<(unsigned int msg){
+    std::lock_guard<std::mutex> lock(buffering_mutex);
 	buffer << msg;
 
 	return *this;
 }
 
 Logger &Logger::operator<<(unsigned long msg){
+    std::lock_guard<std::mutex> lock(buffering_mutex);
 	buffer << msg;
 
 	return *this;
 }
 
 Logger &Logger::operator<<(const unsigned char *msg){
+    std::lock_guard<std::mutex> lock(buffering_mutex);
 	buffer << msg;
 
 	return *this;
 }
 
 Logger &Logger::operator<<(const char *msg){
+    std::lock_guard<std::mutex> lock(buffering_mutex);
 	buffer << msg;
 
 	return *this;

@@ -6,6 +6,7 @@
 #include<iostream>
 #include<sstream>
 #include<string>
+#include<mutex>
 
 namespace DALM {
 	typedef enum __level {
@@ -55,6 +56,7 @@ namespace DALM {
 			MSGLEVEL level;
 			std::FILE *fp;
 			std::ostringstream buffer;
+			std::mutex buffering_mutex, write_mutex;
 	};
 }
 
